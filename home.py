@@ -176,6 +176,11 @@ def show():
 
     mysqldb.close()
 
+def profile():
+    subprocess.Popen(["python", "profile.py"])
+    root.destroy()
+    # Replace "python" with your Python interpreter if needed
+
 
 def logout():
     root.destroy()
@@ -186,7 +191,8 @@ Button(root, text="Add", command=Add, height=3, width=13).place(x=30, y=210)
 Button(root, text="Update", command=update, height=3, width=13).place(x=140, y=210)
 Button(root, text="Delete", command=delete, height=3, width=13).place(x=250, y=210)
 Button(root, text="Search", command=search, height=3, width=13).place(x=360, y=210)
-Button(root, text="Logout", command=logout, height=3, width=13).place(x=470, y=210)  # Added Logout button
+Button(root, text="Logout", command=logout, height=3, width=13).place(x=470, y=210)
+Button(root, text="Profile", command=profile,height=3, width=13).place(x=650, y=20)
 
 cols = ('Plot number', 'Owner Name', 'Size', 'Price', 'Rating', 'Type of House')
 listBox = ttk.Treeview(root, columns=cols, show='headings')
