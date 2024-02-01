@@ -1,6 +1,5 @@
 import tkinter as tk
 from tkinter import messagebox
-from PIL import Image, ImageTk
 import subprocess
 import mysql.connector
 
@@ -34,7 +33,8 @@ def login():
 root = tk.Tk()
 root.title("Login Page")
 root.geometry("800x600")
-
+peach_color = "#f6b092"
+root.configure(bg=peach_color)
 # Center the Tkinter window
 screen_width = root.winfo_screenwidth()
 screen_height = root.winfo_screenheight()
@@ -43,31 +43,29 @@ y_coordinate = (screen_height - 600) / 2
 root.geometry("+%d+%d" % (int(x_coordinate), int(y_coordinate)))
 
 # Set background image
-path = "./images/introImage.jpg"
-img = Image.open(path)
-img = img.resize((800, 600), Image.LANCZOS)
-background_image = ImageTk.PhotoImage(img)
-background_label = tk.Label(root, image=background_image)
-background_label.place(relwidth=1, relheight=1)
+
 
 # Create and place widgets
-username_label = tk.Label(root, text="Username:", bg="white")
-username_entry = tk.Entry(root)
+container_label = tk.Label(root, bg="#214ED3", width=40, height=10)
+container_label.place(relx=0.5, rely=0.5, anchor="center")
 
-password_label = tk.Label(root, text="Password:", bg="white")
-password_entry = tk.Entry(root, show="*")
+# Create and place widgets inside the container
+username_label = tk.Label(container_label, text="Username:", bg="#214ED3")
+username_entry = tk.Entry(container_label)
 
-login_button = tk.Button(root, text="Login", command=login)
+password_label = tk.Label(container_label, text="Password:", bg="#214ED3")
+password_entry = tk.Entry(container_label, show="*")
 
-# Use the grid layout manager
-username_label.grid(row=0, column=0, padx=10, pady=10, columnspan=2, sticky="nsew")
-username_entry.grid(row=1, column=0, padx=10, pady=10, columnspan=2, sticky="nsew")
+login_button = tk.Button(container_label, text="Login", command=login)
 
-password_label.grid(row=2, column=0, padx=10, pady=10, columnspan=2, sticky="nsew")
-password_entry.grid(row=3, column=0, padx=10, pady=10, columnspan=2, sticky="nsew")
+# Place the widgets inside the container
+username_label.grid(row=0, column=0, padx=10, pady=10, sticky="e")
+username_entry.grid(row=0, column=1, padx=10, pady=10)
 
-login_button.grid(row=4, column=0, columnspan=2, pady=10)
+password_label.grid(row=1, column=0, padx=10, pady=10, sticky="e")
+password_entry.grid(row=1, column=1, padx=10, pady=10)
 
+login_button.grid(row=2, column=1, pady=10)
 # Run the Tkinter event loop
 root.mainloop()
 
