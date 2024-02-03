@@ -2,8 +2,17 @@ import tkinter as tk
 from tkinter import *
 from tkinter import ttk, messagebox
 import mysql.connector
+import sys
 from PIL import Image, ImageTk
 import subprocess
+
+username = "None"
+
+if len(sys.argv) > 1:
+    username = sys.argv[1]
+    print(f"Welcome, {username}!")
+else:
+    print("No username provided.")
 
 root = Tk(className=' Real Estate Management System')
 root.geometry("800x500")
@@ -22,6 +31,7 @@ Label(root, text="Size").place(x=10, y=80)
 Label(root, text="Price").place(x=10, y=110)
 Label(root, text="Rating").place(x=10, y=140)
 Label(root, text="Type of House").place(x=10, y=170)
+Label(root, text=username).place(x=680, y=85)
 
 e1 = Entry(root)
 e1.place(x=140, y=20)
@@ -177,7 +187,8 @@ def show():
     mysqldb.close()
 
 def profile():
-    subprocess.Popen(["python", "profile.py"])
+    print(username)
+    subprocess.Popen(["python", "profile.py", username])
     root.destroy()
     # Replace "python" with your Python interpreter if needed
 
