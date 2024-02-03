@@ -31,12 +31,14 @@ Label(root, text="Size").place(x=10, y=80)
 Label(root, text="Price").place(x=10, y=110)
 Label(root, text="Rating").place(x=10, y=140)
 Label(root, text="Type of House").place(x=10, y=170)
-Label(root, text=username).place(x=680, y=85)
+Label(root, text=username).place(x=680, y=80)
 
 e1 = Entry(root)
 e1.place(x=140, y=20)
 
 e2 = Entry(root)
+e2.insert(0, username)  # Set owner's name as the username
+e2.config(state='disabled')  # Make it read-only
 e2.place(x=140, y=50)
 
 e3 = Entry(root)
@@ -60,6 +62,11 @@ def Add():
     rating = e5.get()
     typeofhouse = e6.get()
 
+    # Check if all fields are filled
+    if not studid or not studname or not size or not price or not rating or not typeofhouse:
+        messagebox.showerror("Error", "All fields are compulsory!")
+        return
+
     mysqldb = mysql.connector.connect(host="localhost", user="root", password="test", database="project")
     mycursor = mysqldb.cursor()
 
@@ -70,17 +77,15 @@ def Add():
         mysqldb.commit()
         lastid = mycursor.lastrowid
         messagebox.showinfo("", "Plot added!")
-        e1.delete(0, END)
-        e2.delete(0, END)
-        e3.delete(0, END)
-        e4.delete(0, END)
-        e5.delete(0, END)
-        e6.delete(0, END)
-        e1.focus_set()
+        clear_entries()
+        listBox.delete(*listBox.get_children())
+        show()
 
     except Exception as e:
         print(e)
         mysqldb.rollback()
+
+    finally:
         mysqldb.close()
 
 
@@ -91,29 +96,30 @@ def update():
     price = e4.get()
     rating = e5.get()
     typeofhouse = e6.get()
+
+    # Check if all fields are filled
+    if not studid or not studname or not size or not price or not rating or not typeofhouse:
+        messagebox.showerror("Error", "All fields are compulsory!")
+        return
     
     mysqldb = mysql.connector.connect(host="localhost", user="root", password="test", database="project")
     mycursor = mysqldb.cursor()
 
     try:
-        sql = "UPDATE property SET ownername = %s, size = %s, price = %s, rating = %s, typeofhouse = %s WHERE plotid = %s"
-        val = (studname, size, price, rating, typeofhouse, studid)
+        sql = "UPDATE property SET size = %s, price = %s, rating = %s, typeofhouse = %s WHERE plotid = %s AND ownername = %s"
+        val = (size, price, rating, typeofhouse, studid, studname)
         mycursor.execute(sql, val)
         mysqldb.commit()
-        lastid = mycursor.lastrowid
         messagebox.showinfo("", "Plot Updated")
-
-        e1.delete(0, END)
-        e2.delete(0, END)
-        e3.delete(0, END)
-        e4.delete(0, END)
-        e5.delete(0, END)
-        e6.delete(0, END)
-        e1.focus_set()
+        clear_entries()
+        listBox.delete(*listBox.get_children())
+        show()
 
     except Exception as e:
         print(e)
         mysqldb.rollback()
+
+    finally:
         mysqldb.close()
 
 
@@ -123,9 +129,12 @@ def search():
     mycursor.execute("SELECT plotid, ownername, size, price, rating, typeofhouse FROM property")
     records = mycursor.fetchall()
 
+    # Clear existing items in the Listbox
+    listBox.delete(*listBox.get_children())
+
     for i, (plotid, ownername, size, price, rating, typeofhouse) in enumerate(records, start=1):
-        msg = f"Plot number: {plotid}\nOwner name: {ownername}\nSize: {size}\nPrice: {price}\nRating: {rating}\nType of House: {typeofhouse}"
-        messagebox.showinfo("Plot Details", msg)
+        # Add all six values to the Listbox
+        listBox.insert("", "end", values=(plotid, ownername, size, price, rating, typeofhouse))
 
     mysqldb.close()
 
@@ -137,24 +146,20 @@ def delete():
     mycursor = mysqldb.cursor()
 
     try:
-        sql = "DELETE FROM property WHERE plotid = %s"
-        val = (studid,)
+        sql = "DELETE FROM property WHERE plotid = %s AND ownername = %s"
+        val = (studid, username)
         mycursor.execute(sql, val)
         mysqldb.commit()
-        lastid = mycursor.lastrowid
         messagebox.showinfo("", "Plot deleted!")
-
-        e1.delete(0, END)
-        e2.delete(0, END)
-        e3.delete(0, END)
-        e4.delete(0, END)
-        e5.delete(0, END)
-        e6.delete(0, END)
-        e1.focus_set()
+        clear_entries()
+        listBox.delete(*listBox.get_children())
+        show()
 
     except Exception as e:
         print(e)
         mysqldb.rollback()
+
+    finally:
         mysqldb.close()
 
 
@@ -168,7 +173,6 @@ def GetValue(event):
     row_id = listBox.selection()[0]
     select = listBox.set(row_id)
     e1.insert(0, select['plotid'])
-    e2.insert(0, select['ownername'])
     e3.insert(0, select['size'])
     e4.insert(0, select['price'])
     e5.insert(0, select['rating'])
@@ -178,16 +182,23 @@ def GetValue(event):
 def show():
     mysqldb = mysql.connector.connect(host="localhost", user="root", password="test", database="project")
     mycursor = mysqldb.cursor()
-    mycursor.execute("SELECT plotid, ownername, size, price, rating, typeofhouse FROM property")
-    records = mycursor.fetchall()
 
-    for i, (plotid, ownername, size, price, rating, typeofhouse) in enumerate(records, start=1):
-        listBox.insert("", "end", values=(plotid, ownername, size, price, rating, typeofhouse))
+    try:
+        mycursor.execute("SELECT plotid, ownername, size, price, rating, typeofhouse FROM property WHERE ownername = %s", (username,))
+        records = mycursor.fetchall()
 
-    mysqldb.close()
+        for i, (plotid, ownername, size, price, rating, typeofhouse) in enumerate(records, start=1):
+            listBox.insert("", "end", values=(plotid, ownername, size, price, rating, typeofhouse))
+
+    except Exception as e:
+        print(e)
+        messagebox.showerror("Error", "Error fetching properties from the database")
+
+    finally:
+        mysqldb.close()
+
 
 def profile():
-    print(username)
     subprocess.Popen(["python", "profile.py", username])
     root.destroy()
     # Replace "python" with your Python interpreter if needed
@@ -197,6 +208,13 @@ def logout():
     root.destroy()
     subprocess.Popen(["python", "login.py"])  # Replace "python" with your Python interpreter if needed
 
+def clear_entries():
+    e1.delete(0, END)
+    e3.delete(0, END)
+    e4.delete(0, END)
+    e5.delete(0, END)
+    e6.delete(0, END)
+    e1.focus_set()
 
 Button(root, text="Add", command=Add, height=3, width=13).place(x=30, y=210)
 Button(root, text="Update", command=update, height=3, width=13).place(x=140, y=210)
@@ -210,6 +228,7 @@ listBox = ttk.Treeview(root, columns=cols, show='headings')
 
 for col in cols:
     listBox.heading(col, text=col)
+    listBox.column(col, anchor='center')  # Add this line to center align the column data
     listBox.grid(row=1, column=0, columnspan=2)
     listBox.place(x=1, y=280)
 
