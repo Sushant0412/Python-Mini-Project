@@ -9,6 +9,10 @@ def back():
     root.destroy()
 
 def show_properties():
+    # Clear the table
+    for item in properties_table.get_children():
+        properties_table.delete(item)
+    
     # Fetch properties owned by the user from the database and display in the table
     # Replace 'your_db_credentials' with your actual database credentials
     mysqldb = mysql.connector.connect(host="localhost", user="root", password="test", database="project")
@@ -20,7 +24,9 @@ def show_properties():
         records = mycursor.fetchall()
 
         for i, (plotid, size, price, rating, typeofhouse) in enumerate(records, start=1):
-            properties_table.insert("", "end", values=(plotid, size, price, rating, typeofhouse))
+            # Insert button to open photos.py with plotid
+            button = tk.Button(root, text="View Images", command=lambda plotid=plotid: show_images(plotid))
+            properties_table.insert("", "end", values=(plotid, size, price, rating, typeofhouse, button))
 
     except Exception as e:
         print(e)
@@ -28,6 +34,10 @@ def show_properties():
 
     finally:
         mysqldb.close()
+
+def show_images(plotid):
+    # Open photos.py with plotid as a command line argument
+    subprocess.Popen(["python", "photos.py", str(plotid)])
 
 # Check if a username is provided as a command line argument
 if len(sys.argv) > 1:
@@ -44,7 +54,7 @@ root.title("Profile Page")
 tk.Label(root, text="My Properties", font=('Helvetica', 16)).pack(pady=10)
 
 # Table to display properties
-cols = ('Plot number', 'Size', 'Price', 'Rating', 'Type of House')
+cols = ('Plot number', 'Size', 'Price', 'Rating', 'Type of House', 'Image')  # Updated column name
 properties_table = ttk.Treeview(root, columns=cols, show='headings')
 
 for col in cols:
