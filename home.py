@@ -124,19 +124,37 @@ def update():
 
 
 def search():
+    # Get the ID entered by the user
+    search_id = e1.get()
+
+    # Check if the ID is provided
+    if not search_id:
+        messagebox.showerror("Error", "Please enter an ID to search for.")
+        return
+
+    # Connect to the database
     mysqldb = mysql.connector.connect(host="localhost", user="root", password="test", database="project")
     mycursor = mysqldb.cursor()
-    mycursor.execute("SELECT plotid, ownername, size, price, rating, typeofhouse FROM property")
-    records = mycursor.fetchall()
 
-    # Clear existing items in the Listbox
-    listBox.delete(*listBox.get_children())
+    try:
+        # Execute the SQL query to fetch properties based on the provided ID
+        mycursor.execute("SELECT plotid, ownername, size, price, rating, typeofhouse FROM property WHERE plotid = %s", (search_id,))
+        records = mycursor.fetchall()
 
-    for i, (plotid, ownername, size, price, rating, typeofhouse) in enumerate(records, start=1):
-        # Add all six values to the Listbox
-        listBox.insert("", "end", values=(plotid, ownername, size, price, rating, typeofhouse))
+        # Clear existing items in the Listbox
+        listBox.delete(*listBox.get_children())
 
-    mysqldb.close()
+        # Populate the Listbox with the fetched records
+        for i, (plotid, ownername, size, price, rating, typeofhouse) in enumerate(records, start=1):
+            listBox.insert("", "end", values=(plotid, ownername, size, price, rating, typeofhouse))
+
+    except Exception as e:
+        print(e)
+        messagebox.showerror("Error", "Error fetching properties from the database")
+
+    finally:
+        # Close the database connection
+        mysqldb.close()
 
 
 def delete():
@@ -184,7 +202,7 @@ def show():
     mycursor = mysqldb.cursor()
 
     try:
-        mycursor.execute("SELECT plotid, ownername, size, price, rating, typeofhouse FROM property WHERE ownername = %s", (username,))
+        mycursor.execute("SELECT plotid, ownername, size, price, rating, typeofhouse FROM property")
         records = mycursor.fetchall()
 
         for i, (plotid, ownername, size, price, rating, typeofhouse) in enumerate(records, start=1):
