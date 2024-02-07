@@ -28,8 +28,8 @@ def show_properties():
         records = mycursor.fetchall()
 
         for i, (plotid, size, price, rating, typeofhouse) in enumerate(records, start=1):
-            # Insert button to open photos.py with plotid when double-clicked
-            properties_table.insert("", "end", values=(plotid, size, price, rating, typeofhouse))
+            # Insert button to open photos.py with plotid when "Images" text is double-clicked
+            properties_table.insert("", "end", values=(plotid, size, price, rating, typeofhouse, "Images"))
 
     except Exception as e:
         print(e)
@@ -42,8 +42,8 @@ def show_images(event):
     # Get the clicked column
     clicked_column = properties_table.identify_column(event.x)
     
-    # Check if the clicked column corresponds to the "Plot number" column
-    if clicked_column == '#1':
+    # Check if the clicked column corresponds to the "Images" column
+    if clicked_column == '#6':
         # Get the item clicked
         item_clicked = properties_table.identify_row(event.y)
         # Get the plotid of the item clicked
@@ -67,11 +67,11 @@ root.geometry("800x600")
 tk.Label(root, text="My Properties", font=('Helvetica', 16)).pack(pady=10)
 
 # Table to display properties
-cols = ('Plot number', 'Size', 'Price', 'Rating', 'Type of House')  # Updated column name
+cols = ('Plot number', 'Size', 'Price', 'Rating', 'Type of House', 'Images')  # Updated column name
 properties_table = ttk.Treeview(root, columns=cols, show='headings')
 
 # Set column widths
-col_widths = [150, 150, 150, 150, 150]  # Adjust widths as needed
+col_widths = [100, 100, 100, 100, 100, 100]  # Adjust widths as needed
 for col, width in zip(cols, col_widths):
     properties_table.column(col, width=width)
 

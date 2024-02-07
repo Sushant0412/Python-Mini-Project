@@ -1,7 +1,14 @@
 import tkinter as tk
+import sys
 
 def button_clicked():
-    label.config(text="Button Clicked!")
+    global plot_id
+    label.config(text="Hello, " + plot_id)
+
+if len(sys.argv) > 1:
+    plot_id = sys.argv[1]
+else:
+    plot_id = "No plot_id provided."
 
 # Create the main window
 root = tk.Tk()
