@@ -8,6 +8,10 @@ def back():
     subprocess.Popen(["python", "home.py", username])  # Pass the username back to home.py
     root.destroy()
 
+def open_photos(plotid):
+    # Open photos.py with plotid as a command line argument
+    subprocess.Popen(["python", "photos.py", str(plotid)])
+
 def show_properties():
     # Clear the table
     for item in properties_table.get_children():
@@ -24,9 +28,8 @@ def show_properties():
         records = mycursor.fetchall()
 
         for i, (plotid, size, price, rating, typeofhouse) in enumerate(records, start=1):
-            # Insert button to open photos.py with plotid
-            button = tk.Button(root, text="View Images", command=lambda plotid=plotid: show_images(plotid))
-            properties_table.insert("", "end", values=(plotid, size, price, rating, typeofhouse, button))
+            # Insert button to open photos.py with plotid when double-clicked
+            properties_table.insert("", "end", values=(plotid, size, price, rating, typeofhouse))
 
     except Exception as e:
         print(e)
@@ -35,9 +38,18 @@ def show_properties():
     finally:
         mysqldb.close()
 
-def show_images(plotid):
-    # Open photos.py with plotid as a command line argument
-    subprocess.Popen(["python", "photos.py", str(plotid)])
+def show_images(event):
+    # Get the clicked column
+    clicked_column = properties_table.identify_column(event.x)
+    
+    # Check if the clicked column corresponds to the "Plot number" column
+    if clicked_column == '#1':
+        # Get the item clicked
+        item_clicked = properties_table.identify_row(event.y)
+        # Get the plotid of the item clicked
+        plotid = properties_table.item(item_clicked, 'values')[0]
+        # Open photos.py with plotid as a command line argument
+        open_photos(plotid)
 
 # Check if a username is provided as a command line argument
 if len(sys.argv) > 1:
@@ -49,18 +61,27 @@ else:
 
 root = tk.Tk()
 root.title("Profile Page")
+root.geometry("800x600")
 
 # Label to display "My Properties"
 tk.Label(root, text="My Properties", font=('Helvetica', 16)).pack(pady=10)
 
 # Table to display properties
-cols = ('Plot number', 'Size', 'Price', 'Rating', 'Type of House', 'Image')  # Updated column name
+cols = ('Plot number', 'Size', 'Price', 'Rating', 'Type of House')  # Updated column name
 properties_table = ttk.Treeview(root, columns=cols, show='headings')
+
+# Set column widths
+col_widths = [150, 150, 150, 150, 150]  # Adjust widths as needed
+for col, width in zip(cols, col_widths):
+    properties_table.column(col, width=width)
 
 for col in cols:
     properties_table.heading(col, text=col)
 
 properties_table.pack(pady=10)
+
+# Bind double-click event to show_images function
+properties_table.bind("<Double-1>", show_images)
 
 # Button to go back
 back_button = tk.Button(root, text="Back", command=back)
