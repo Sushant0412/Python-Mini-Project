@@ -3,6 +3,7 @@ from tkinter import *
 from tkinter import ttk, messagebox
 import mysql.connector
 import sys
+from tkinter import Scrollbar
 from PIL import Image, ImageTk
 import subprocess
 
@@ -244,11 +245,18 @@ Button(root, text="Profile", command=profile,height=3, width=13).place(x=650, y=
 cols = ('Plot number', 'Owner Name', 'Size', 'Price', 'Rating', 'Type of House')
 listBox = ttk.Treeview(root, columns=cols, show='headings')
 
+listBox_width = 780
+hsb_width = 776
+
 for col in cols:
     listBox.heading(col, text=col)
     listBox.column(col, anchor='center')  # Add this line to center align the column data
     listBox.grid(row=1, column=0, columnspan=2)
-    listBox.place(x=1, y=280)
+    listBox.place(x=10, y=280, width=listBox_width, height=210)
+
+hsb = ttk.Scrollbar(root, orient="horizontal", command=listBox.xview)
+hsb.place(x=12, y=472, width=hsb_width)
+listBox.configure(xscrollcommand=hsb.set)
 
 show()
 listBox.bind('<Double-Button-1>', GetValue)
