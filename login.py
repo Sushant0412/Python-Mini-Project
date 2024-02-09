@@ -36,7 +36,9 @@ root.title("Login Page")
 root.geometry("800x600")
 peach_color = "#f6b092"
 root.configure(bg=peach_color)
+
 # Center the Tkinter window
+
 screen_width = root.winfo_screenwidth()
 screen_height = root.winfo_screenheight()
 x_coordinate = (screen_width - 800) / 2
