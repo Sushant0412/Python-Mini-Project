@@ -1,4 +1,5 @@
 // please change this if any changes
+// see requirements.txt for installation purposes
 
 database:
 db = project
@@ -19,7 +20,7 @@ rating int nn
 typeofhouse varchar(20) nn
 
 // below this tumko banana hai
-// while adding path to the db make sure to use \\ instead of \ for path
+// while adding path to the db for images make sure to use \\ instead of \ for path
 table 3 - image
 user_id varchar(255) nn pk (user id argv se aajayega in photos.py tujhe bas db se display karna hai) 
 image1 largeblob nn
