@@ -15,8 +15,17 @@ if len(sys.argv) > 1:
 else:
     print("No username provided.")
 
-root = Tk(className=' Real Estate Management System')
-root.geometry("800x500")
+root = tk.Tk(className=' Real Estate Management System')
+window_width = 800
+window_height = 600
+
+screen_width = root.winfo_screenwidth()
+screen_height = root.winfo_screenheight()
+
+x_coordinate = (screen_width/2) - (window_width/2)
+y_coordinate = (screen_height/2) - (window_height/2)
+
+root.geometry("%dx%d+%d+%d" % (window_width, window_height, x_coordinate, y_coordinate))
 root.configure(bg='light blue')
 
 global e1
@@ -91,24 +100,43 @@ def Add():
 
 
 def update():
-    studid = e1.get()
-    studname = e2.get()
+    plotid = e1.get()
     size = e3.get()
     price = e4.get()
     rating = e5.get()
     typeofhouse = e6.get()
 
-    # Check if all fields are filled
-    if not studid or not studname or not size or not price or not rating or not typeofhouse:
-        messagebox.showerror("Error", "All fields are compulsory!")
+    # Check if plotid is filled
+    if not plotid:
+        messagebox.showerror("Error", "Plot ID is compulsory!")
         return
     
+    # Connect to the database
     mysqldb = mysql.connector.connect(host="localhost", user="root", password="test", database="project")
     mycursor = mysqldb.cursor()
 
     try:
+        # Fetch the existing values from the database for the provided plotid and ownername
+        mycursor.execute("SELECT size, price, rating, typeofhouse FROM property WHERE plotid = %s AND ownername = %s", (plotid, username))
+        record = mycursor.fetchone()
+
+        if not record:
+            messagebox.showerror("Error", "You are not the owner of this property.")
+            return
+
+        # Update the fields that are filled, keep the rest unchanged
+        if size:
+            record[0] = size
+        if price:
+            record[1] = price
+        if rating:
+            record[2] = rating
+        if typeofhouse:
+            record[3] = typeofhouse
+
+        # Perform the update operation
         sql = "UPDATE property SET size = %s, price = %s, rating = %s, typeofhouse = %s WHERE plotid = %s AND ownername = %s"
-        val = (size, price, rating, typeofhouse, studid, studname)
+        val = (record[0], record[1], record[2], record[3], plotid, username)
         mycursor.execute(sql, val)
         mysqldb.commit()
         messagebox.showinfo("", "Plot Updated")
@@ -116,12 +144,16 @@ def update():
         listBox.delete(*listBox.get_children())
         show()
 
-    except Exception as e:
-        print(e)
+    except mysql.connector.Error as err:
+        print("MySQL error:", err)
         mysqldb.rollback()
+        messagebox.showerror("Error", "Failed to update plot details. Please check your input and try again.")
 
     finally:
         mysqldb.close()
+
+
+
 
 
 def search():
@@ -227,6 +259,11 @@ def logout():
     root.destroy()
     subprocess.Popen(["python", "login.py"])  # Replace "python" with your Python interpreter if needed
 
+def refresh():
+    clear_entries()
+    listBox.delete(*listBox.get_children())
+    show()
+
 def clear_entries():
     e1.delete(0, END)
     e3.delete(0, END)
@@ -239,7 +276,8 @@ Button(root, text="Add", command=Add, height=3, width=13).place(x=30, y=210)
 Button(root, text="Update", command=update, height=3, width=13).place(x=140, y=210)
 Button(root, text="Delete", command=delete, height=3, width=13).place(x=250, y=210)
 Button(root, text="Search", command=search, height=3, width=13).place(x=360, y=210)
-Button(root, text="Logout", command=logout, height=3, width=13).place(x=470, y=210)
+Button(root, text="Refresh", command=refresh, height=3,width=13).place(x=470, y=210)
+Button(root, text="Logout", command=logout, height=3, width=13).place(x=580, y=210)
 Button(root, text="Profile", command=profile,height=3, width=13).place(x=650, y=20)
 
 cols = ('Plot number', 'Owner Name', 'Size', 'Price', 'Rating', 'Type of House')
