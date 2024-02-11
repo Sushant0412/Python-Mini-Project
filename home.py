@@ -1,10 +1,7 @@
 import tkinter as tk
-from tkinter import *
 from tkinter import ttk, messagebox
 import mysql.connector
 import sys
-from tkinter import Scrollbar
-from PIL import Image, ImageTk
 import subprocess
 
 username = "None"
@@ -36,31 +33,31 @@ global e5
 global e6
 
 tk.Label(root, text="Plot number").place(x=10, y=20)
-Label(root, text="Owner Name").place(x=10, y=50)
-Label(root, text="Size").place(x=10, y=80)
-Label(root, text="Price").place(x=10, y=110)
-Label(root, text="Rating").place(x=10, y=140)
-Label(root, text="Type of House").place(x=10, y=170)
-Label(root, text=username).place(x=680, y=80)
+tk.Label(root, text="Owner Name").place(x=10, y=50)
+tk.Label(root, text="Size").place(x=10, y=80)
+tk.Label(root, text="Price").place(x=10, y=110)
+tk.Label(root, text="Rating").place(x=10, y=140)
+tk.Label(root, text="Type of House").place(x=10, y=170)
+tk.Label(root, text=username).place(x=680, y=80)
 
-e1 = Entry(root)
+e1 = tk.Entry(root)
 e1.place(x=140, y=20)
 
-e2 = Entry(root)
+e2 = tk.Entry(root)
 e2.insert(0, username)  # Set owner's name as the username
 e2.config(state='disabled')  # Make it read-only
 e2.place(x=140, y=50)
 
-e3 = Entry(root)
+e3 = tk.Entry(root)
 e3.place(x=140, y=80)
 
-e4 = Entry(root)
+e4 = tk.Entry(root)
 e4.place(x=140, y=110)
 
-e5 = Entry(root)
+e5 = tk.Entry(root)
 e5.place(x=140, y=140)
 
-e6 = Entry(root)
+e6 = tk.Entry(root)
 e6.place(x=140, y=170)
 
 
@@ -189,19 +186,25 @@ def delete():
         mysqldb.close()
 
 def GetValue(event):
-    e1.delete(0, END)
-    e2.delete(0, END)
-    e3.delete(0, END)
-    e4.delete(0, END)
-    e5.delete(0, END)
-    e6.delete(0, END)
+    e1.delete(0, tk.END)
+    e2.delete(0, tk.END)
+    e3.delete(0, tk.END)
+    e4.delete(0, tk.END)
+    e5.delete(0, tk.END)
+    e6.delete(0, tk.END)
     row_id = listBox.selection()[0]
-    select = listBox.set(row_id)
-    e1.insert(0, select['plotid'])
-    e3.insert(0, select['size'])
-    e4.insert(0, select['price'])
-    e5.insert(0, select['rating'])
-    e6.insert(0, select['typeofhouse'])
+    column_id = listBox.identify_column(event.x)
+    if column_id == '#7':  # Check if double-clicked column is the "Images" column
+        select = listBox.item(row_id)
+        plot_id = select['values'][0]
+        subprocess.Popen(["python", "photos.py", str(plot_id)])
+    else:
+        select = listBox.item(row_id)
+        e1.insert(0, select['values'][0])
+        e3.insert(0, select['values'][2])
+        e4.insert(0, select['values'][3])
+        e5.insert(0, select['values'][4])
+        e6.insert(0, select['values'][5])
 
 def show():
     mysqldb = mysql.connector.connect(host="localhost", user="root", password="test", database="project")
@@ -212,7 +215,7 @@ def show():
         records = mycursor.fetchall()
 
         for i, (plotid, ownername, size, price, rating, typeofhouse) in enumerate(records, start=1):
-            listBox.insert("", "end", values=(plotid, ownername, size, price, rating, typeofhouse))
+            listBox.insert("", "end", values=(plotid, ownername, size, price, rating, typeofhouse, "Images"))
 
     except Exception as e:
         print(e)
@@ -236,22 +239,22 @@ def refresh():
     show()
 
 def clear_entries():
-    e1.delete(0, END)
-    e3.delete(0, END)
-    e4.delete(0, END)
-    e5.delete(0, END)
-    e6.delete(0, END)
+    e1.delete(0, tk.END)
+    e3.delete(0, tk.END)
+    e4.delete(0, tk.END)
+    e5.delete(0, tk.END)
+    e6.delete(0, tk.END)
     e1.focus_set()
 
-Button(root, text="Add", command=Add, height=3, width=13).place(x=30, y=210)
-Button(root, text="Update", command=update, height=3, width=13).place(x=140, y=210)
-Button(root, text="Delete", command=delete, height=3, width=13).place(x=250, y=210)
-Button(root, text="Search", command=search, height=3, width=13).place(x=360, y=210)
-Button(root, text="Refresh", command=refresh, height=3,width=13).place(x=470, y=210)
-Button(root, text="Logout", command=logout, height=3, width=13).place(x=580, y=210)
-Button(root, text="Profile", command=profile,height=3, width=13).place(x=650, y=20)
+tk.Button(root, text="Add", command=Add, height=3, width=13).place(x=30, y=210)
+tk.Button(root, text="Update", command=update, height=3, width=13).place(x=140, y=210)
+tk.Button(root, text="Delete", command=delete, height=3, width=13).place(x=250, y=210)
+tk.Button(root, text="Search", command=search, height=3, width=13).place(x=360, y=210)
+tk.Button(root, text="Refresh", command=refresh, height=3,width=13).place(x=470, y=210)
+tk.Button(root, text="Logout", command=logout, height=3, width=13).place(x=580, y=210)
+tk.Button(root, text="Profile", command=profile,height=3, width=13).place(x=650, y=20)
 
-cols = ('Plot number', 'Owner Name', 'Size', 'Price', 'Rating', 'Type of House')
+cols = ('Plot number', 'Owner Name', 'Size', 'Price', 'Rating', 'Type of House', 'Images')
 listBox = ttk.Treeview(root, columns=cols, show='headings')
 
 listBox_width = 780
@@ -260,11 +263,10 @@ hsb_width = 776
 for col in cols:
     listBox.heading(col, text=col)
     listBox.column(col, anchor='center')  # Add this line to center align the column data
-    listBox.grid(row=1, column=0, columnspan=2)
-    listBox.place(x=10, y=280, width=listBox_width, height=210)
+    listBox.place(x=10, y=280, width=listBox_width, height=300)
 
 hsb = ttk.Scrollbar(root, orient="horizontal", command=listBox.xview)
-hsb.place(x=12, y=472, width=hsb_width)
+hsb.place(x=12, y=564, width=hsb_width)
 listBox.configure(xscrollcommand=hsb.set)
 
 show()

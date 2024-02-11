@@ -32,7 +32,6 @@ def login():
 # Create the main window
 root = tk.Tk()
 root.title("Login Page")
-root.geometry("800x600")
 
 # Load the image
 image = Image.open("./images/loginBg.webp")  # Change the file name accordingly
@@ -40,6 +39,17 @@ image = image.resize((800, 600), Image.LANCZOS)  # Resize image to fit window
 
 # Convert Image object to Tkinter PhotoImage object
 photo = ImageTk.PhotoImage(image)
+
+# Get screen width and height
+screen_width = root.winfo_screenwidth()
+screen_height = root.winfo_screenheight()
+
+# Calculate position to center window
+x = (screen_width - 800) // 2
+y = (screen_height - 600) // 2
+
+# Set geometry of the window
+root.geometry(f"800x600+{x}+{y}")
 
 # Create a label for the image
 image_label = tk.Label(root, image=photo)

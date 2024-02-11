@@ -90,7 +90,7 @@ cols = ('Plot number', 'Size', 'Price', 'Rating', 'Type of House', 'Images')  # 
 properties_table = ttk.Treeview(root, columns=cols, show='headings', style="Custom.Treeview")
 
 # Set column widths
-col_widths = [100, 100, 100, 100, 100, 100]  # Adjust widths as needed
+col_widths = [110, 110, 110, 110, 110, 110]  # Adjust widths as needed
 for col, width in zip(cols, col_widths):
     properties_table.column(col, width=width)
 
