@@ -98,45 +98,25 @@ def Add():
     finally:
         mysqldb.close()
 
-
 def update():
-    plotid = e1.get()
+    studid = e1.get()
+    studname = e2.get()
     size = e3.get()
     price = e4.get()
     rating = e5.get()
     typeofhouse = e6.get()
 
-    # Check if plotid is filled
-    if not plotid:
-        messagebox.showerror("Error", "Plot ID is compulsory!")
+    # Check if all fields are filled
+    if not studid or not studname or not size or not price or not rating or not typeofhouse:
+        messagebox.showerror("Error", "All fields are compulsory!")
         return
     
-    # Connect to the database
     mysqldb = mysql.connector.connect(host="localhost", user="root", password="test", database="project")
     mycursor = mysqldb.cursor()
 
     try:
-        # Fetch the existing values from the database for the provided plotid and ownername
-        mycursor.execute("SELECT size, price, rating, typeofhouse FROM property WHERE plotid = %s AND ownername = %s", (plotid, username))
-        record = mycursor.fetchone()
-
-        if not record:
-            messagebox.showerror("Error", "You are not the owner of this property.")
-            return
-
-        # Update the fields that are filled, keep the rest unchanged
-        if size:
-            record[0] = size
-        if price:
-            record[1] = price
-        if rating:
-            record[2] = rating
-        if typeofhouse:
-            record[3] = typeofhouse
-
-        # Perform the update operation
         sql = "UPDATE property SET size = %s, price = %s, rating = %s, typeofhouse = %s WHERE plotid = %s AND ownername = %s"
-        val = (record[0], record[1], record[2], record[3], plotid, username)
+        val = (size, price, rating, typeofhouse, studid, studname)
         mycursor.execute(sql, val)
         mysqldb.commit()
         messagebox.showinfo("", "Plot Updated")
@@ -144,16 +124,12 @@ def update():
         listBox.delete(*listBox.get_children())
         show()
 
-    except mysql.connector.Error as err:
-        print("MySQL error:", err)
+    except Exception as e:
+        print(e)
         mysqldb.rollback()
-        messagebox.showerror("Error", "Failed to update plot details. Please check your input and try again.")
 
     finally:
         mysqldb.close()
-
-
-
 
 
 def search():
@@ -189,7 +165,6 @@ def search():
         # Close the database connection
         mysqldb.close()
 
-
 def delete():
     studid = e1.get()
 
@@ -213,7 +188,6 @@ def delete():
     finally:
         mysqldb.close()
 
-
 def GetValue(event):
     e1.delete(0, END)
     e2.delete(0, END)
@@ -228,7 +202,6 @@ def GetValue(event):
     e4.insert(0, select['price'])
     e5.insert(0, select['rating'])
     e6.insert(0, select['typeofhouse'])
-
 
 def show():
     mysqldb = mysql.connector.connect(host="localhost", user="root", password="test", database="project")
@@ -248,12 +221,10 @@ def show():
     finally:
         mysqldb.close()
 
-
 def profile():
     subprocess.Popen(["python", "profile.py", username])
     root.destroy()
     # Replace "python" with your Python interpreter if needed
-
 
 def logout():
     root.destroy()
