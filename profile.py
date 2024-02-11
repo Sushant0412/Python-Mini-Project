@@ -63,12 +63,19 @@ root = tk.Tk()
 root.title("Profile Page")
 root.geometry("800x600")
 
+# Configure background color
+root.configure(bg='light blue')
+
+# Add a style
+style = ttk.Style(root)
+style.theme_use("clam")  # You can change the theme as needed
+
 # Label to display "My Properties"
-tk.Label(root, text="My Properties", font=('Helvetica', 16)).pack(pady=10)
+tk.Label(root, text="My Properties", font=('Helvetica', 16), bg='light blue').pack(pady=10)
 
 # Table to display properties
 cols = ('Plot number', 'Size', 'Price', 'Rating', 'Type of House', 'Images')  # Updated column name
-properties_table = ttk.Treeview(root, columns=cols, show='headings')
+properties_table = ttk.Treeview(root, columns=cols, show='headings', style="Custom.Treeview")
 
 # Set column widths
 col_widths = [100, 100, 100, 100, 100, 100]  # Adjust widths as needed
@@ -84,11 +91,11 @@ properties_table.pack(pady=10)
 properties_table.bind("<Double-1>", show_images)
 
 # Button to go back
-back_button = tk.Button(root, text="Back", command=back)
+back_button = tk.Button(root, text="Back", command=back, width=10)
 back_button.pack(pady=20)
 
 # Button to show properties
-show_properties_button = tk.Button(root, text="Show My Properties", command=show_properties)
+show_properties_button = tk.Button(root, text="Show My Properties", command=show_properties, width=20)
 show_properties_button.pack(pady=10)
 
 # Run the Tkinter event loop
