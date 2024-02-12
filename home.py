@@ -66,20 +66,20 @@ def Add():
     studname = e2.get()
     size = e3.get()
     price = e4.get()
-    rating = e5.get()
+    address = e5.get()
     typeofhouse = e6.get()
 
     # Check if all fields are filled
-    if not studid or not studname or not size or not price or not rating or not typeofhouse:
+    if not studid or not studname or not size or not price or not address or not typeofhouse:
         messagebox.showerror("Error", "All fields are compulsory!")
         return
 
-    mysqldb = mysql.connector.connect(host="localhost", user="root", password="test", database="project")
-    mycursor = mysqldb.cursor()
-
     try:
-        sql = "INSERT INTO property (plotid, ownername, size, price, rating, typeofhouse) VALUES (%s, %s, %s, %s, %s, %s)"
-        val = (studid, studname, size, price, rating, typeofhouse)
+        mysqldb = mysql.connector.connect(host="localhost", user="root", password="test", database="project")
+        mycursor = mysqldb.cursor()
+
+        sql = "INSERT INTO property (plotid, ownername, size, price, address, typeofhouse) VALUES (%s, %s, %s, %s, %s, %s)"
+        val = (studid, studname, size, price, address, typeofhouse)
         mycursor.execute(sql, val)
         mysqldb.commit()
         lastid = mycursor.lastrowid
@@ -88,32 +88,45 @@ def Add():
         listBox.delete(*listBox.get_children())
         show()
 
+    except mysql.connector.Error as err:
+        # Handle specific MySQL errors
+        messagebox.showerror("MySQL Error", f"Error: {err.msg}")
+
     except Exception as e:
-        print(e)
-        mysqldb.rollback()
+        # Handle other exceptions
+        messagebox.showerror("Error", f"An error occurred: {str(e)}")
 
     finally:
-        mysqldb.close()
+        # Close the database connection
+        if 'mysqldb' in locals() and mysqldb.is_connected():
+            mycursor.close()
+            mysqldb.close()
+
 
 def update():
     studid = e1.get()
     studname = e2.get()
     size = e3.get()
     price = e4.get()
-    rating = e5.get()
+    address = e5.get()
     typeofhouse = e6.get()
 
     # Check if all fields are filled
-    if not studid or not studname or not size or not price or not rating or not typeofhouse:
+    if not studid or not studname or not size or not price or not address or not typeofhouse:
         messagebox.showerror("Error", "All fields are compulsory!")
+        return
+    
+    # Check if the property ownername matches the current username
+    if studname != username:
+        messagebox.showerror("Error", "You are not authorized to update this property.")
         return
     
     mysqldb = mysql.connector.connect(host="localhost", user="root", password="test", database="project")
     mycursor = mysqldb.cursor()
 
     try:
-        sql = "UPDATE property SET size = %s, price = %s, rating = %s, typeofhouse = %s WHERE plotid = %s AND ownername = %s"
-        val = (size, price, rating, typeofhouse, studid, studname)
+        sql = "UPDATE property SET size = %s, price = %s, address = %s, typeofhouse = %s WHERE plotid = %s AND ownername = %s"
+        val = (size, price, address, typeofhouse, studid, studname)
         mycursor.execute(sql, val)
         mysqldb.commit()
         messagebox.showinfo("", "Plot Updated")
@@ -127,6 +140,7 @@ def update():
 
     finally:
         mysqldb.close()
+
 
 
 def search():
@@ -144,15 +158,15 @@ def search():
 
     try:
         # Execute the SQL query to fetch properties based on the provided ID
-        mycursor.execute("SELECT plotid, ownername, size, price, rating, typeofhouse FROM property WHERE plotid = %s", (search_id,))
+        mycursor.execute("SELECT plotid, ownername, size, price, address, typeofhouse FROM property WHERE plotid = %s", (search_id,))
         records = mycursor.fetchall()
 
         # Clear existing items in the Listbox
         listBox.delete(*listBox.get_children())
 
         # Populate the Listbox with the fetched records
-        for i, (plotid, ownername, size, price, rating, typeofhouse) in enumerate(records, start=1):
-            listBox.insert("", "end", values=(plotid, ownername, size, price, rating, typeofhouse))
+        for i, (plotid, ownername, size, price, address, typeofhouse) in enumerate(records, start=1):
+            listBox.insert("", "end", values=(plotid, ownername, size, price, address, typeofhouse))
 
     except Exception as e:
         print(e)
@@ -212,11 +226,11 @@ def show():
         mycursor = mysqldb.cursor()
 
         # Modify the SQL query to join property and ratings tables
-        mycursor.execute("SELECT p.plotid, p.ownername, p.size, p.price, r.rating, p.typeofhouse FROM property p LEFT JOIN ratings r ON p.plotid = r.plot_id")
+        mycursor.execute("SELECT p.plotid, p.ownername, p.size, p.price, r.rating, p.address, p.typeofhouse FROM property p LEFT JOIN ratings r ON p.plotid = r.plot_id")
         records = mycursor.fetchall()
 
-        for i, (plotid, ownername, size, price, rating, typeofhouse) in enumerate(records, start=1):
-            listBox.insert("", "end", values=(plotid, ownername, size, price, rating, typeofhouse, "Images"))
+        for i, (plotid, ownername, size, price, rating, address, typeofhouse) in enumerate(records, start=1):
+            listBox.insert("", "end", values=(plotid, ownername, size, price, rating, address, typeofhouse, "Images"))
 
     except Exception as e:
         print(e)
@@ -224,6 +238,7 @@ def show():
 
     finally:
         mysqldb.close()
+
 
 def profile():
     subprocess.Popen(["python", "profile.py", username])
@@ -255,7 +270,7 @@ tk.Button(root, text="Refresh", command=refresh, height=3,width=13).place(x=470,
 tk.Button(root, text="Logout", command=logout, height=3, width=13).place(x=580, y=210)
 tk.Button(root, text="Profile", command=profile,height=3, width=13).place(x=650, y=20)
 
-cols = ('Plot number', 'Owner Name', 'Size', 'Price', 'Rating', 'Type of House', 'Images')
+cols = ('Plot number', 'Owner Name', 'Size', 'Price', 'Rating', 'Address', 'Type of House', 'Images')
 listBox = ttk.Treeview(root, columns=cols, show='headings')
 
 listBox_width = 780
@@ -264,7 +279,8 @@ hsb_width = 776
 for col in cols:
     listBox.heading(col, text=col)
     listBox.column(col, anchor='center')  # Add this line to center align the column data
-    listBox.place(x=10, y=280, width=listBox_width, height=300)
+
+listBox.place(x=10, y=280, width=listBox_width, height=300)
 
 hsb = ttk.Scrollbar(root, orient="horizontal", command=listBox.xview)
 hsb.place(x=12, y=564, width=hsb_width)
@@ -274,3 +290,4 @@ show()
 listBox.bind('<Double-Button-1>', GetValue)
 
 root.mainloop()
+

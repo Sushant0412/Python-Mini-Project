@@ -24,12 +24,18 @@ def show_properties():
 
     try:
         # Assuming 'username' is the variable containing the username
-        mycursor.execute("SELECT plotid, size, price, rating, typeofhouse FROM property WHERE ownername=%s", (username,))
+        mycursor.execute("""
+            SELECT p.plotid, p.size, p.price, p.address, r.rating, p.typeofhouse 
+            FROM property p 
+            LEFT JOIN ratings r ON p.plotid = r.plot_id 
+            WHERE p.ownername = %s
+        """, (username,))
+
         records = mycursor.fetchall()
 
-        for i, (plotid, size, price, rating, typeofhouse) in enumerate(records, start=1):
+        for i, (plotid, size, price, address, rating, typeofhouse) in enumerate(records, start=1):
             # Insert button to open photos.py with plotid when "Images" text is double-clicked
-            properties_table.insert("", "end", values=(plotid, size, price, rating, typeofhouse, "Images"))
+            properties_table.insert("", "end", values=(plotid, size, price, address, rating, typeofhouse, "Images"))
 
     except Exception as e:
         print(e)
@@ -38,18 +44,23 @@ def show_properties():
     finally:
         mysqldb.close()
 
+
 def show_images(event):
     # Get the clicked column
-    clicked_column = properties_table.identify_column(event.x)
+    col_index = properties_table.identify_column(event.x)
     
     # Check if the clicked column corresponds to the "Images" column
-    if clicked_column == '#6':
-        # Get the item clicked
+    if col_index == '#7':
+        # Get the clicked item
         item_clicked = properties_table.identify_row(event.y)
-        # Get the plotid of the item clicked
-        plotid = properties_table.item(item_clicked, 'values')[0]
-        # Open photos.py with plotid as a command line argument
-        open_photos(plotid)
+        # Get the values of the clicked item
+        values = properties_table.item(item_clicked, 'values')
+        if values:
+            # Extract the plotid from the clicked item
+            plotid = values[0]
+            # Open photos.py with plotid as a command line argument
+            open_photos(plotid)
+
 
 # Check if a username is provided as a command line argument
 if len(sys.argv) > 1:
@@ -86,11 +97,13 @@ style.theme_use("clam")  # You can change the theme as needed
 tk.Label(root, text="My Properties", font=('Helvetica', 16), bg='light blue').pack(pady=10)
 
 # Table to display properties
-cols = ('Plot number', 'Size', 'Price', 'Rating', 'Type of House', 'Images')  # Updated column name
-properties_table = ttk.Treeview(root, columns=cols, show='headings', style="Custom.Treeview")
+cols = ('Plot number', 'Size', 'Price', 'Address', 'Rating', 'Type of House', 'Images')  # Updated column name with 'Address'
 
 # Set column widths
-col_widths = [110, 110, 110, 110, 110, 110]  # Adjust widths as needed
+col_widths = [110, 110, 110, 110, 110, 110, 110]  # Updated width for the 'Address' column
+
+properties_table = ttk.Treeview(root, columns=cols, show='headings', style="Custom.Treeview")
+
 for col, width in zip(cols, col_widths):
     properties_table.column(col, width=width)
 
@@ -112,3 +125,4 @@ show_properties_button.pack(pady=10)
 
 # Run the Tkinter event loop
 root.mainloop()
+
