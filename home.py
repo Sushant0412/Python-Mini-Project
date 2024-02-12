@@ -36,7 +36,7 @@ tk.Label(root, text="Plot number").place(x=10, y=20)
 tk.Label(root, text="Owner Name").place(x=10, y=50)
 tk.Label(root, text="Size").place(x=10, y=80)
 tk.Label(root, text="Price").place(x=10, y=110)
-tk.Label(root, text="Rating").place(x=10, y=140)
+tk.Label(root, text="Address").place(x=10, y=140)
 tk.Label(root, text="Type of House").place(x=10, y=170)
 tk.Label(root, text=username).place(x=680, y=80)
 
@@ -207,11 +207,12 @@ def GetValue(event):
         e6.insert(0, select['values'][5])
 
 def show():
-    mysqldb = mysql.connector.connect(host="localhost", user="root", password="test", database="project")
-    mycursor = mysqldb.cursor()
-
     try:
-        mycursor.execute("SELECT plotid, ownername, size, price, rating, typeofhouse FROM property")
+        mysqldb = mysql.connector.connect(host="localhost", user="root", password="test", database="project")
+        mycursor = mysqldb.cursor()
+
+        # Modify the SQL query to join property and ratings tables
+        mycursor.execute("SELECT p.plotid, p.ownername, p.size, p.price, r.rating, p.typeofhouse FROM property p LEFT JOIN ratings r ON p.plotid = r.plot_id")
         records = mycursor.fetchall()
 
         for i, (plotid, ownername, size, price, rating, typeofhouse) in enumerate(records, start=1):
