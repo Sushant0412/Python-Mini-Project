@@ -208,10 +208,10 @@ def GetValue(event):
     e6.delete(0, tk.END)
     row_id = listBox.selection()[0]
     column_id = listBox.identify_column(event.x)
-    if column_id == '#7':  # Check if double-clicked column is the "Images" column
+    if column_id == '#8':  # Check if double-clicked column is the "Images" column
         select = listBox.item(row_id)
         plot_id = select['values'][0]
-        subprocess.Popen(["python", "photos.py", str(plot_id)])
+        subprocess.Popen(["python", "photos.py", str(plot_id), username])
     else:
         select = listBox.item(row_id)
         e1.insert(0, select['values'][0])
@@ -230,7 +230,7 @@ def show():
         records = mycursor.fetchall()
 
         for i, (plotid, ownername, size, price, rating, address, typeofhouse) in enumerate(records, start=1):
-            listBox.insert("", "end", values=(plotid, ownername, size, price, rating, address, typeofhouse, "Images"))
+            listBox.insert("", "end", values=(plotid, ownername, size, price, rating, address, typeofhouse, "Show Details"))
 
     except Exception as e:
         print(e)
@@ -270,7 +270,7 @@ tk.Button(root, text="Refresh", command=refresh, height=3,width=13).place(x=470,
 tk.Button(root, text="Logout", command=logout, height=3, width=13).place(x=580, y=210)
 tk.Button(root, text="Profile", command=profile,height=3, width=13).place(x=650, y=20)
 
-cols = ('Plot number', 'Owner Name', 'Size', 'Price', 'Rating', 'Address', 'Type of House', 'Images')
+cols = ('Plot number', 'Owner Name', 'Size', 'Price', 'Rating', 'Address', 'Type of House', 'Details')
 listBox = ttk.Treeview(root, columns=cols, show='headings')
 
 listBox_width = 780

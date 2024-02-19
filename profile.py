@@ -10,7 +10,7 @@ def back():
 
 def open_photos(plotid):
     # Open photos.py with plotid as a command line argument
-    subprocess.Popen(["python", "photos.py", str(plotid)])
+    subprocess.Popen(["python", "photos.py", username, str(plotid)])
 
 def show_properties():
     # Clear the table
@@ -35,7 +35,7 @@ def show_properties():
 
         for i, (plotid, size, price, address, rating, typeofhouse) in enumerate(records, start=1):
             # Insert button to open photos.py with plotid when "Images" text is double-clicked
-            properties_table.insert("", "end", values=(plotid, size, price, address, rating, typeofhouse, "Images"))
+            properties_table.insert("", "end", values=(plotid, size, price, address, rating, typeofhouse, "Show Details"))
 
     except Exception as e:
         print(e)
@@ -97,7 +97,7 @@ style.theme_use("clam")  # You can change the theme as needed
 tk.Label(root, text="My Properties", font=('Helvetica', 16), bg='light blue').pack(pady=10)
 
 # Table to display properties
-cols = ('Plot number', 'Size', 'Price', 'Address', 'Rating', 'Type of House', 'Images')  # Updated column name with 'Address'
+cols = ('Plot number', 'Size', 'Price', 'Address', 'Rating', 'Type of House', 'Details')  # Updated column name with 'Address'
 
 # Set column widths
 col_widths = [110, 110, 110, 110, 110, 110, 110]  # Updated width for the 'Address' column
