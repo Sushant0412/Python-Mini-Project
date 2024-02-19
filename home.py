@@ -212,9 +212,6 @@ def delete():
     finally:
         mysqldb.close()
 
-
-
-
 def GetValue(event):
     global id_value
     e1.delete(0, tk.END)
@@ -225,18 +222,57 @@ def GetValue(event):
     e6.delete(0, tk.END)
     row_id = listBox.selection()[0]
     column_id = listBox.identify_column(event.x)
+    
     if column_id == '#8':  # Check if double-clicked column is the "Details" column
         select = listBox.item(row_id)
         id_value = select['values'][0]  # Set the id_value to the selected plotid
         plot_id = select['values'][0]
         subprocess.Popen(["python", "photos.py", str(plot_id), username])
+    
+    elif column_id == '#2':  # Check if double-clicked column is the "Owner Name" column
+        select = listBox.item(row_id)
+        id_value = select['values'][0]  # Set the id_value to the selected plotid
+        
+        # Connect to the database
+        mysqldb = mysql.connector.connect(host="localhost", user="root", password="test", database="project")
+        mycursor = mysqldb.cursor()
+
+        try:
+            # Check if the property is already in the favorites table
+            mycursor.execute("SELECT * FROM favorite WHERE favorite_id = %s AND ownername = %s", (id_value, username))
+            result = mycursor.fetchone()
+
+            if result:
+                # If property is already in favorites, remove it from favorites
+                sql = "DELETE FROM favorite WHERE favorite_id = %s AND ownername = %s"
+                val = (id_value, username)
+                mycursor.execute(sql, val)
+                mysqldb.commit()
+                messagebox.showinfo("", "Property removed from favorites!")
+            else:
+                # If property is not in favorites, add it to favorites
+                sql = "INSERT INTO favorite (favorite_id, ownername) VALUES (%s, %s)"
+                val = (id_value, username)
+                mycursor.execute(sql, val)
+                mysqldb.commit()
+                messagebox.showinfo("", "Property added to favorites!")
+            
+        except Exception as e:
+            print(e)
+            messagebox.showerror("Error", "An error occurred")
+
+        finally:
+            mysqldb.close()
+    
     else:
         select = listBox.item(row_id)
         e1.insert(0, select['values'][0])
+        e2.insert(0, select['values'][1])
         e3.insert(0, select['values'][2])
         e4.insert(0, select['values'][3])
         e5.insert(0, select['values'][4])
         e6.insert(0, select['values'][5])
+
 
 
 def show():
