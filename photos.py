@@ -14,21 +14,21 @@ def add_rating(plot_id, rating):
         if connection.is_connected():
             cursor = connection.cursor()
 
-            # Check if plot_id already exists
-            cursor.execute("SELECT rating FROM ratings WHERE plot_id = %s", (plot_id,))
+            # Check if plot_id already exists for the current owner
+            cursor.execute("SELECT rating FROM ratings WHERE plot_id = %s AND owner = %s", (plot_id, username))
             existing_rating = cursor.fetchone()
 
             if existing_rating is None:
-                # If plot_id doesn't exist, insert the new rating
-                sql_query = "INSERT INTO ratings (plot_id, rating) VALUES (%s, %s)"
-                cursor.execute(sql_query, (plot_id, rating))
+                # If plot_id doesn't exist for the current owner, insert the new rating
+                sql_query = "INSERT INTO ratings (plot_id, rating, owner) VALUES (%s, %s, %s)"
+                cursor.execute(sql_query, (plot_id, rating, username))
             else:
-                # If plot_id exists, calculate the average rating
+                # If plot_id exists for the current owner, calculate the average rating
                 existing_rating = existing_rating[0]
                 new_rating = (existing_rating + rating) / 2.0
                 # Update the rating in the database
-                sql_query = "UPDATE ratings SET rating = %s WHERE plot_id = %s"
-                cursor.execute(sql_query, (new_rating, plot_id))
+                sql_query = "UPDATE ratings SET rating = %s WHERE plot_id = %s AND owner = %s"
+                cursor.execute(sql_query, (new_rating, plot_id, username))
 
             # Commit the transaction
             connection.commit()
@@ -42,6 +42,7 @@ def add_rating(plot_id, rating):
             connection.close()
 
 
+
 def button_clicked():
     global plot_id
     label.config(text="Hello, " + plot_id)
@@ -53,8 +54,10 @@ def button_clicked():
 
 if len(sys.argv) > 1:
     plot_id = sys.argv[1]
+    username = sys.argv[2]
 else:
     plot_id = "No plot_id provided."
+    username = "No username provided."
 
 # Create the main window
 root = tk.Tk()

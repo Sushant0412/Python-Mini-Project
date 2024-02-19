@@ -125,7 +125,7 @@ def update():
     mycursor = mysqldb.cursor()
 
     try:
-        sql = "UPDATE property SET size = %s, price = %s, address = %s, typeofhouse = %s WHERE plotid = %s AND ownername = %s"
+        sql = "UPDATE property SET size = %s, price = %s, address = %s, typeofhouse = %s, plotid = %s WHERE ownername = %s"
         val = (size, price, address, typeofhouse, studid, studname)
         mycursor.execute(sql, val)
         mysqldb.commit()
