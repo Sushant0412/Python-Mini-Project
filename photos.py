@@ -2,8 +2,9 @@ import tkinter as tk
 import sys
 import mysql.connector
 from mysql.connector import Error
+from tkinter import messagebox
 
-def add_rating(plot_id, rating):
+def add_rating(plot_id, rating, username):
     try:
         connection = mysql.connector.connect(
             host='localhost',
@@ -35,45 +36,53 @@ def add_rating(plot_id, rating):
             print("Rating added/updated successfully.")
     except Error as e:
         print("Error:", e)
+        messagebox.showerror("MySQL Error", f"Error: {e.msg}")
     finally:
         # Close the database connection
         if connection.is_connected():
             cursor.close()
             connection.close()
 
+def button_clicked(entry, plot_id, username):
+    rating = entry.get()
+    try:
+        rating = float(rating)
+        if 0 <= rating <= 5:
+            add_rating(plot_id, rating, username)
+        else:
+            print("Invalid rating. Please enter a rating between 0 and 5.")
+            messagebox.showerror("Invalid Rating", "Please enter a rating between 0 and 5.")
+    except ValueError:
+        print("Invalid rating. Please enter a number.")
+        messagebox.showerror("Invalid Rating", "Please enter a number for the rating.")
 
-
-def button_clicked():
-    global plot_id
-    label.config(text="Hello, " + plot_id)
-    rating = float(entry.get())
-    if 0 <= rating <= 5:
-        add_rating(plot_id, rating)
+def main():
+    if len(sys.argv) > 2:
+        plot_id = sys.argv[1]
+        username = sys.argv[2]
+        print(f"Welcome, {username}!")
     else:
-        print("Invalid rating. Please enter a rating between 0 and 5.")
+        print("No plot_id or username provided.")
+        sys.exit(1)  # Exit the script if no plot_id or username is provided
 
-if len(sys.argv) > 1:
-    plot_id = sys.argv[1]
-    username = sys.argv[2]
-else:
-    plot_id = "No plot_id provided."
-    username = "No username provided."
+    root = tk.Tk()
+    root.title("Rating Page")
+    root.geometry("400x200")
 
-# Create the main window
-root = tk.Tk()
-root.title("Simple Tkinter Example")
+    # Create a Label widget for rating input
+    label = tk.Label(root, text="Enter Rating (0-5):")
+    label.pack(pady=10)
 
-# Create a label widget
-label = tk.Label(root, text="Hello, Tkinter!")
-label.pack(pady=20)
+    # Create an Entry widget for rating input
+    entry = tk.Entry(root)
+    entry.pack()
 
-# Create an Entry widget for rating input
-entry = tk.Entry(root)
-entry.pack()
+    # Create a Button widget to submit rating
+    button = tk.Button(root, text="Submit Rating", command=lambda: button_clicked(entry, plot_id, username))
+    button.pack(pady=10)
 
-# Create a button widget
-button = tk.Button(root, text="Click Me", command=button_clicked)
-button.pack()
+    # Run the Tkinter event loop
+    root.mainloop()
 
-# Run the Tkinter event loop
-root.mainloop()
+if __name__ == "__main__":
+    main()
