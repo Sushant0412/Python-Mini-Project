@@ -177,20 +177,33 @@ def search():
         mysqldb.close()
 
 def delete():
-    studid = e1.get()
-
+    global id_value
     mysqldb = mysql.connector.connect(host="localhost", user="root", password="test", database="project")
     mycursor = mysqldb.cursor()
 
     try:
-        sql = "DELETE FROM property WHERE plotid = %s AND ownername = %s"
-        val = (studid, username)
-        mycursor.execute(sql, val)
-        mysqldb.commit()
-        messagebox.showinfo("", "Plot deleted!")
-        clear_entries()
-        listBox.delete(*listBox.get_children())
-        show()
+        # Fetch the plotid using id_value
+        studid = e1.get()
+        mycursor.execute("SELECT plotid FROM property WHERE plotid = %s", (studid,))
+        result = mycursor.fetchone()
+        plotid = result[0] if result else None
+
+        # Check if the plotid matches the current user and ownername is the current username
+        mycursor.execute("SELECT ownername FROM property WHERE plotid = %s", (studid,))
+        result = mycursor.fetchone()
+        ownername = result[0] if result else None
+        
+        if plotid and ownername == username:
+            sql = "DELETE FROM property WHERE plotid = %s"
+            val = (plotid,)
+            mycursor.execute(sql, val)
+            mysqldb.commit()
+            messagebox.showinfo("", "Plot deleted!")
+            clear_entries()
+            listBox.delete(*listBox.get_children())
+            show()
+        else:
+            messagebox.showerror("", "You are not authorized to delete this plot.")
 
     except Exception as e:
         print(e)
@@ -199,7 +212,11 @@ def delete():
     finally:
         mysqldb.close()
 
+
+
+
 def GetValue(event):
+    global id_value
     e1.delete(0, tk.END)
     e2.delete(0, tk.END)
     e3.delete(0, tk.END)
@@ -208,8 +225,9 @@ def GetValue(event):
     e6.delete(0, tk.END)
     row_id = listBox.selection()[0]
     column_id = listBox.identify_column(event.x)
-    if column_id == '#8':  # Check if double-clicked column is the "Images" column
+    if column_id == '#8':  # Check if double-clicked column is the "Details" column
         select = listBox.item(row_id)
+        id_value = select['values'][0]  # Set the id_value to the selected plotid
         plot_id = select['values'][0]
         subprocess.Popen(["python", "photos.py", str(plot_id), username])
     else:
@@ -219,6 +237,7 @@ def GetValue(event):
         e4.insert(0, select['values'][3])
         e5.insert(0, select['values'][4])
         e6.insert(0, select['values'][5])
+
 
 def show():
     try:
