@@ -44,6 +44,40 @@ def show_properties():
     finally:
         mysqldb.close()
 
+def show_favorites():
+    # Clear the table
+    for item in properties_table.get_children():
+        properties_table.delete(item)
+    
+    # Fetch properties from the favorites table
+    # Replace 'your_db_credentials' with your actual database credentials
+    mysqldb = mysql.connector.connect(host="localhost", user="root", password="test", database="project")
+    mycursor = mysqldb.cursor()
+
+    try:
+        # Assuming 'username' is the variable containing the username
+        mycursor.execute("""
+            SELECT p.plotid, p.size, p.price, p.address, r.rating, p.typeofhouse 
+            FROM property p 
+            LEFT JOIN ratings r ON p.plotid = r.plot_id 
+            INNER JOIN favorite f ON p.plotid = f.favorite_id 
+            WHERE f.current_user = %s
+        """, (username,))
+
+        records = mycursor.fetchall()
+
+        for i, (plotid, size, price, address, rating, typeofhouse) in enumerate(records, start=1):
+            # Insert button to open photos.py with plotid when "Images" text is double-clicked
+            properties_table.insert("", "end", values=(plotid, size, price, address, rating, typeofhouse, "Show Details"))
+
+    except Exception as e:
+        print(e)
+        messagebox.showerror("Error", "Error fetching favorites from the database")
+
+    finally:
+        mysqldb.close()
+
+
 
 def show_images(event):
     # Get the clicked column
@@ -123,6 +157,9 @@ back_button.pack(pady=20)
 show_properties_button = tk.Button(root, text="Show My Properties", command=show_properties, width=20)
 show_properties_button.pack(pady=10)
 
+# Button to show favorites
+show_favorites_button = tk.Button(root, text="Show Favorites", command=show_favorites, width=20)
+show_favorites_button.pack(pady=10)
+
 # Run the Tkinter event loop
 root.mainloop()
-

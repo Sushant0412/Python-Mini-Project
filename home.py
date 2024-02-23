@@ -232,28 +232,29 @@ def GetValue(event):
     elif column_id == '#2':  # Check if double-clicked column is the "Owner Name" column
         select = listBox.item(row_id)
         id_value = select['values'][0]  # Set the id_value to the selected plotid
-        
+        prop_owner = select['values'][1]
         # Connect to the database
         mysqldb = mysql.connector.connect(host="localhost", user="root", password="test", database="project")
         mycursor = mysqldb.cursor()
 
         try:
             # Check if the property is already in the favorites table
-            mycursor.execute("SELECT * FROM favorite WHERE favorite_id = %s AND ownername = %s", (id_value, username))
+            mycursor.execute("SELECT * FROM favorite WHERE favorite_id = %s AND ownername = %s", (id_value, prop_owner))
             result = mycursor.fetchone()
 
             if result:
                 # If property is already in favorites, remove it from favorites
                 sql = "DELETE FROM favorite WHERE favorite_id = %s AND ownername = %s"
-                val = (id_value, username)
+                val = (id_value, prop_owner)
                 mycursor.execute(sql, val)
                 mysqldb.commit()
                 messagebox.showinfo("", "Property removed from favorites!")
             else:
                 # If property is not in favorites, add it to favorites
-                sql = "INSERT INTO favorite (favorite_id, ownername) VALUES (%s, %s)"
-                val = (id_value, username)
+                sql = "INSERT INTO favorite (favorite_id, ownername, `current_user`) VALUES (%s, %s, %s)"
+                val = (id_value, prop_owner, username)
                 mycursor.execute(sql, val)
+
                 mysqldb.commit()
                 messagebox.showinfo("", "Property added to favorites!")
             
@@ -272,6 +273,8 @@ def GetValue(event):
         e4.insert(0, select['values'][3])
         e5.insert(0, select['values'][4])
         e6.insert(0, select['values'][5])
+
+
 
 
 
