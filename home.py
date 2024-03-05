@@ -194,9 +194,21 @@ def delete():
         ownername = result[0] if result else None
         
         if plotid and ownername == username:
-            sql = "DELETE FROM property WHERE plotid = %s"
-            val = (plotid,)
-            mycursor.execute(sql, val)
+            # Delete from property table
+            sql_property = "DELETE FROM property WHERE plotid = %s"
+            val_property = (plotid,)
+            mycursor.execute(sql_property, val_property)
+
+            # Delete from ratings table if exists
+            sql_ratings = "DELETE FROM ratings WHERE plot_id = %s"
+            val_ratings = (plotid,)
+            mycursor.execute(sql_ratings, val_ratings)
+
+            # Delete from favorites table if exists
+            sql_favorites = "DELETE FROM favorite WHERE favorite_id = %s"
+            val_favorites = (plotid,)
+            mycursor.execute(sql_favorites, val_favorites)
+
             mysqldb.commit()
             messagebox.showinfo("", "Plot deleted!")
             clear_entries()
@@ -211,6 +223,7 @@ def delete():
 
     finally:
         mysqldb.close()
+
 
 def GetValue(event):
     global id_value
