@@ -24,8 +24,9 @@ def add_rating(plot_id, rating, username):
                 sql_query = "INSERT INTO ratings (plot_id, rating, owner) VALUES (%s, %s, %s)"
                 cursor.execute(sql_query, (plot_id, rating, username))
             else:
-                # If plot_id exists for the current owner, calculate the average rating
+                # If plot_id exists for the current owner, update the existing rating
                 existing_rating = existing_rating[0]
+                # Calculate the new average rating
                 new_rating = (existing_rating + rating) / 2.0
                 # Update the rating in the database
                 sql_query = "UPDATE ratings SET rating = %s WHERE plot_id = %s AND owner = %s"
@@ -42,6 +43,8 @@ def add_rating(plot_id, rating, username):
         if connection.is_connected():
             cursor.close()
             connection.close()
+
+
 
 def button_clicked(entry, plot_id, username):
     rating = entry.get()

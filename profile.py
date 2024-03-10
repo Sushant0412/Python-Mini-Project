@@ -9,8 +9,9 @@ def back():
     root.destroy()
 
 def open_photos(plotid):
-    # Open photos.py with plotid as a command line argument
-    subprocess.Popen(["python", "photos.py", username, str(plotid)])
+    # Open photos.py with plotid as the first argument and username as the second argument
+    subprocess.Popen(["python", "photos.py", str(plotid), username])
+
 
 def show_properties():
     # Clear the table
@@ -91,6 +92,7 @@ def show_images(event):
         values = properties_table.item(item_clicked, 'values')
         if values:
             # Extract the plotid from the clicked item
+            print(values)
             plotid = values[0]
             # Open photos.py with plotid as a command line argument
             open_photos(plotid)
