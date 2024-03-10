@@ -33,7 +33,7 @@ def add_rating(plot_id, rating, username):
 
             # Commit the transaction
             connection.commit()
-            print("Rating added/updated successfully.")
+            messagebox.showinfo("Success", "Rating added/updated successfully.")
     except Error as e:
         print("Error:", e)
         messagebox.showerror("MySQL Error", f"Error: {e.msg}")
