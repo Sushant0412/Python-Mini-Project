@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 import mysql.connector
 import sys
+from datetime import datetime, timedelta
 import subprocess
 
 username = "None"
@@ -288,8 +289,7 @@ def GetValue(event):
         e6.insert(0, select['values'][5])
 
 
-
-
+from datetime import datetime, timedelta
 
 def show():
     try:
@@ -297,10 +297,23 @@ def show():
         mycursor = mysqldb.cursor()
 
         # Modify the SQL query to join property and ratings tables
-        mycursor.execute("SELECT p.plotid, p.ownername, p.size, p.price, r.rating, p.address, p.typeofhouse FROM property p LEFT JOIN ratings r ON p.plotid = r.plot_id")
+        mycursor.execute("SELECT p.plotid, p.ownername, p.size, p.price, p.lastUpdated, r.rating, p.address, p.typeofhouse FROM property p LEFT JOIN ratings r ON p.plotid = r.plot_id")
         records = mycursor.fetchall()
 
-        for i, (plotid, ownername, size, price, rating, address, typeofhouse) in enumerate(records, start=1):
+        for i, (plotid, ownername, size, price, last_updated, rating, address, typeofhouse) in enumerate(records, start=1):
+            # Calculate the current date
+            current_date = datetime.now()
+            # Calculate the difference in seconds between current date and lastUpdated
+            difference_seconds = (current_date - last_updated).total_seconds()
+            # Check if the difference is approximately 2 minutes (120 seconds)
+            if difference_seconds <= 120:
+                # Increment price by 7%
+                new_price = price + (price * 0.07)
+                # Update the price and lastUpdated in the database
+                update_query = "UPDATE property SET price = %s, lastUpdated = %s WHERE plotid = %s"
+                mycursor.execute(update_query, (new_price, current_date, plotid))
+                mysqldb.commit()  # Commit the transaction
+
             listBox.insert("", "end", values=(plotid, ownername, size, price, rating, address, typeofhouse, "Show Details"))
 
     except Exception as e:
