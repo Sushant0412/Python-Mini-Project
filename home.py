@@ -307,30 +307,60 @@ def GetValue(event):
 
 
 from datetime import datetime, timedelta
+import threading  # Import threading module for handling the price incrementation in a separate thread
+import time
+# Define a global variable to store the refresh interval in seconds
+refresh_interval = 31536000  # 2 minutes
 
+def increment_prices():
+    # Connect to the database
+    mysqldb = mysql.connector.connect(host="localhost", user="root", password="test", database="project")
+    mycursor = mysqldb.cursor()
+
+    try:
+        while True:
+            # Fetch all properties from the database
+            mycursor.execute("SELECT plotid, price, lastUpdated FROM property")
+            records = mycursor.fetchall()
+
+            current_date = datetime.now()
+
+            for plotid, price, last_updated in records:
+                difference_seconds = (current_date - last_updated).total_seconds()
+
+                if difference_seconds >= refresh_interval:
+                    # Increment the price by 7%
+                    new_price = price + (price * 0.07)
+                    # Update the price and lastUpdated in the database
+                    update_query = "UPDATE property SET price = %s, lastUpdated = %s WHERE plotid = %s"
+                    mycursor.execute(update_query, (new_price, current_date, plotid))
+                    mysqldb.commit()  # Commit the transaction
+
+            # Sleep for the refresh interval before incrementing prices again
+            time.sleep(refresh_interval)
+
+    except Exception as e:
+        print(e)
+
+    finally:
+        mysqldb.close()
+
+# Start the price incrementation thread
+price_thread = threading.Thread(target=increment_prices)
+price_thread.daemon = True  # Set the thread as a daemon thread to stop automatically when the main thread exits
+price_thread.start()
+
+# Function to display properties in the GUI
 def show():
     try:
         mysqldb = mysql.connector.connect(host="localhost", user="root", password="test", database="project")
         mycursor = mysqldb.cursor()
 
-        # Modify the SQL query to join property and ratings tables
-        mycursor.execute("SELECT p.plotid, p.ownername, p.size, p.price, p.lastUpdated, p.address, p.typeofhouse, r.rating FROM property p LEFT JOIN ratings r ON p.plotid = r.plot_id")
+        # Fetch properties from the database
+        mycursor.execute("SELECT p.plotid, p.ownername, p.size, p.price, p.address, p.typeofhouse, r.rating FROM property p LEFT JOIN ratings r ON p.plotid = r.plot_id")
         records = mycursor.fetchall()
 
-        for i, (plotid, ownername, size, price, last_updated, address, typeofhouse, rating) in enumerate(records, start=1):
-            # Calculate the current date
-            current_date = datetime.now()
-            # Calculate the difference in seconds between current date and lastUpdated
-            difference_seconds = (current_date - last_updated).total_seconds()
-            # Check if the difference is approximately 2 minutes (120 seconds)
-            if difference_seconds <= 1200:
-                # Increment price by 7%
-                new_price = price + (price * 0.07)
-                # Update the price and lastUpdated in the database
-                update_query = "UPDATE property SET price = %s, lastUpdated = %s WHERE plotid = %s"
-                mycursor.execute(update_query, (new_price, current_date, plotid))
-                mysqldb.commit()  # Commit the transaction
-
+        for i, (plotid, ownername, size, price, address, typeofhouse, rating) in enumerate(records, start=1):
             listBox.insert("", "end", values=(plotid, ownername, size, price, address, typeofhouse, rating, "Show Details"))
 
     except Exception as e:
@@ -339,6 +369,7 @@ def show():
 
     finally:
         mysqldb.close()
+
 
 
 def profile():
