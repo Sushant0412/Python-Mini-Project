@@ -34,12 +34,13 @@ global e5
 global e6
 
 tk.Label(root, text="Plot number").place(x=10, y=20)
-tk.Label(root, text="Owner Name").place(x=10, y=50)
+tk.Label(root, text="Owner Name").place(x=290, y=20)
 tk.Label(root, text="Size").place(x=10, y=80)
 tk.Label(root, text="Price").place(x=10, y=110)
 tk.Label(root, text="Address").place(x=10, y=140)
 tk.Label(root, text="Type of House").place(x=10, y=170)
 tk.Label(root, text=username).place(x=680, y=80)
+tk.Label(root, text="City").place(x=10, y=50)
 
 e1 = tk.Entry(root)
 e1.place(x=140, y=20)
@@ -47,7 +48,7 @@ e1.place(x=140, y=20)
 e2 = tk.Entry(root)
 e2.insert(0, username)  # Set owner's name as the username
 e2.config(state='disabled')  # Make it read-only
-e2.place(x=140, y=50)
+e2.place(x=370, y=20)
 
 e3 = tk.Entry(root)
 e3.place(x=140, y=80)
@@ -61,6 +62,9 @@ e5.place(x=140, y=140)
 e6 = tk.Entry(root)
 e6.place(x=140, y=170)
 
+e7 = tk.Entry(root)
+e7.place(x=140, y=50)
+
 
 def Add():
     studid = e1.get()
@@ -69,9 +73,10 @@ def Add():
     price = e4.get()
     address = e5.get()
     typeofhouse = e6.get()
+    city = e7.get()  # Add city attribute
 
     # Check if all fields are filled
-    if not studid or not studname or not size or not price or not address or not typeofhouse:
+    if not studid or not studname or not size or not price or not address or not typeofhouse or not city:
         messagebox.showerror("Error", "All fields are compulsory!")
         return
 
@@ -79,8 +84,8 @@ def Add():
         mysqldb = mysql.connector.connect(host="localhost", user="root", password="test", database="project")
         mycursor = mysqldb.cursor()
 
-        sql = "INSERT INTO property (plotid, ownername, size, price, address, typeofhouse) VALUES (%s, %s, %s, %s, %s, %s)"
-        val = (studid, studname, size, price, address, typeofhouse)
+        sql = "INSERT INTO property (plotid, ownername, size, price, address, typeofhouse, city) VALUES (%s, %s, %s, %s, %s, %s, %s)"
+        val = (studid, studname, size, price, address, typeofhouse, city)
         mycursor.execute(sql, val)
         mysqldb.commit()
         lastid = mycursor.lastrowid
@@ -111,9 +116,10 @@ def update():
     price = e4.get()
     address = e5.get()
     typeofhouse = e6.get()
+    city = e7.get()  # Add city attribute
 
     # Check if all fields are filled
-    if not studid or not studname or not size or not price or not address or not typeofhouse:
+    if not studid or not studname or not size or not price or not address or not typeofhouse or not city:
         messagebox.showerror("Error", "All fields are compulsory!")
         return
     
@@ -126,8 +132,8 @@ def update():
     mycursor = mysqldb.cursor()
 
     try:
-        sql = "UPDATE property SET size = %s, price = %s, address = %s, typeofhouse = %s, plotid = %s WHERE ownername = %s"
-        val = (size, price, address, typeofhouse, studid, studname)
+        sql = "UPDATE property SET size = %s, price = %s, address = %s, typeofhouse = %s, city = %s, plotid = %s WHERE ownername = %s"
+        val = (size, price, address, typeofhouse, city, studid, studname)
         mycursor.execute(sql, val)
         mysqldb.commit()
         messagebox.showinfo("", "Plot Updated")
@@ -143,14 +149,13 @@ def update():
         mysqldb.close()
 
 
-
 def search():
-    # Get the ID entered by the user
-    search_id = e1.get()
+    # Get the city criteria entered by the user
+    city_criteria = e7.get()  # City search criteria
 
-    # Check if the ID is provided
-    if not search_id:
-        messagebox.showerror("Error", "Please enter an ID to search for.")
+    # Check if the city criteria is provided
+    if not city_criteria:
+        messagebox.showerror("Error", "Please enter a city to search for.")
         return
 
     # Connect to the database
@@ -158,20 +163,32 @@ def search():
     mycursor = mysqldb.cursor()
 
     try:
-        # Execute the SQL query to fetch properties based on the provided ID
-        mycursor.execute("SELECT plotid, ownername, size, price, address, typeofhouse FROM property WHERE plotid = %s", (search_id,))
+        # Define the SQL query to fetch properties based on the provided city criteria
+        sql = """
+            SELECT p.plotid, p.ownername, p.size, p.price, p.address, p.typeofhouse, r.rating 
+            FROM property p 
+            LEFT JOIN ratings r ON p.plotid = r.plot_id 
+            WHERE p.city = %s
+        """
+
+        # Execute the SQL query with the city criteria
+        mycursor.execute(sql, (city_criteria,))
         records = mycursor.fetchall()
 
         # Clear existing items in the Listbox
         listBox.delete(*listBox.get_children())
 
         # Populate the Listbox with the fetched records
-        for i, (plotid, ownername, size, price, address, typeofhouse) in enumerate(records, start=1):
-            listBox.insert("", "end", values=(plotid, ownername, size, price, address, typeofhouse))
+        for i, (plotid, ownername, size, price, address, typeofhouse, rating) in enumerate(records, start=1):
+            listBox.insert("", "end", values=(plotid, ownername, size, price, address, typeofhouse, rating, "Show Details"))
+
+    except mysql.connector.Error as err:
+        print("MySQL Error:", err.msg)
+        messagebox.showerror("Error", f"MySQL Error: {err.msg}")
 
     except Exception as e:
-        print(e)
-        messagebox.showerror("Error", "Error fetching properties from the database")
+        print("Exception:", e)
+        messagebox.showerror("Error", f"An error occurred: {str(e)}")
 
     finally:
         # Close the database connection
@@ -297,16 +314,16 @@ def show():
         mycursor = mysqldb.cursor()
 
         # Modify the SQL query to join property and ratings tables
-        mycursor.execute("SELECT p.plotid, p.ownername, p.size, p.price, p.lastUpdated, r.rating, p.address, p.typeofhouse FROM property p LEFT JOIN ratings r ON p.plotid = r.plot_id")
+        mycursor.execute("SELECT p.plotid, p.ownername, p.size, p.price, p.lastUpdated, p.address, p.typeofhouse, r.rating FROM property p LEFT JOIN ratings r ON p.plotid = r.plot_id")
         records = mycursor.fetchall()
 
-        for i, (plotid, ownername, size, price, last_updated, rating, address, typeofhouse) in enumerate(records, start=1):
+        for i, (plotid, ownername, size, price, last_updated, address, typeofhouse, rating) in enumerate(records, start=1):
             # Calculate the current date
             current_date = datetime.now()
             # Calculate the difference in seconds between current date and lastUpdated
             difference_seconds = (current_date - last_updated).total_seconds()
             # Check if the difference is approximately 2 minutes (120 seconds)
-            if difference_seconds <= 120:
+            if difference_seconds <= 1200:
                 # Increment price by 7%
                 new_price = price + (price * 0.07)
                 # Update the price and lastUpdated in the database
@@ -314,7 +331,7 @@ def show():
                 mycursor.execute(update_query, (new_price, current_date, plotid))
                 mysqldb.commit()  # Commit the transaction
 
-            listBox.insert("", "end", values=(plotid, ownername, size, price, rating, address, typeofhouse, "Show Details"))
+            listBox.insert("", "end", values=(plotid, ownername, size, price, address, typeofhouse, rating, "Show Details"))
 
     except Exception as e:
         print(e)
@@ -344,6 +361,7 @@ def clear_entries():
     e4.delete(0, tk.END)
     e5.delete(0, tk.END)
     e6.delete(0, tk.END)
+    e7.delete(0, tk.END)
     e1.focus_set()
 
 tk.Button(root, text="Add", command=Add, height=3, width=13).place(x=30, y=210)
@@ -354,7 +372,7 @@ tk.Button(root, text="Refresh", command=refresh, height=3,width=13).place(x=470,
 tk.Button(root, text="Logout", command=logout, height=3, width=13).place(x=580, y=210)
 tk.Button(root, text="Profile", command=profile,height=3, width=13).place(x=650, y=20)
 
-cols = ('Plot number', 'Owner Name', 'Size', 'Price', 'Rating', 'Address', 'Type of House', 'Details')
+cols = ('Plot number', 'Owner Name', 'Size', 'Price', 'Address', 'Type of House','Rating', 'Details')
 listBox = ttk.Treeview(root, columns=cols, show='headings')
 
 listBox_width = 780
