@@ -57,20 +57,15 @@ image_label = tk.Label(root, image=photo)
 image_label.place(x=0, y=0)
 
 # Create and place widgets directly on the main window
-username_label = tk.Label(root, text="Username:", fg="black", font=("Poppins", 16))
-username_label.place(relx=0.597, rely=0.25, anchor="w")
 
 username_entry = tk.Entry(root, width=23, font=("Poppins", 12), borderwidth=0, highlightthickness=0)
 username_entry.place(relx=0.605, rely=0.32, anchor="w", height=45)
 
-password_label = tk.Label(root, text="Password:", bg="#d8dbd8", fg="black", font=("Poppins", 16))
-password_label.place(relx=0.6, rely=0.41, anchor="w")
-
 password_entry = tk.Entry(root, show="*", width=16, font=("Poppins", 12), borderwidth=0, highlightthickness=0)
 password_entry.place(relx=0.605, rely=0.48, anchor="w", height=44)
 
-login_button = tk.Button(root, text="Login", command=login, bg="blue", fg="white", width=24, height=2, font=("Helvetica", 12))
-login_button.place(relx=0.74, rely=0.65, anchor="center")
+login_button = tk.Button(root, text="Login", command=login, bg="#1F75FE", fg="white", width=24, height=2, font=("Helvetica", 12), border=6, borderwidth=0, relief="solid")
+login_button.place(relx=0.737, rely=0.65, anchor="center")
 
 # Run the Tkinter event loop
 root.mainloop()
