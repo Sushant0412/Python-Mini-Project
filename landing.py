@@ -6,9 +6,10 @@ import os
 def open_home_with_action(action, username=None):
     if action == "home.py":
         subprocess.Popen(["python", action, username])
-    elif action == "login":
+    elif action == "login.py":
         # Perform logout functionality or redirect to login page
         print("Logging out...")
+        subprocess.Popen(["python", action])
     elif action == "Add Property":
         # Perform Add Property functionality
         print("Opening Add Property page...")
