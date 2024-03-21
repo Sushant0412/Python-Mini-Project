@@ -34,7 +34,7 @@ root = tk.Tk()
 root.title("Login Page")
 
 # Load the image from desktop
-image_path = "C:/Users/susha/Desktop/Login.png"  # Update the path with your desktop username
+image_path = "./images/Login.png"  # Update the path with your desktop username
 image = Image.open(image_path)
 image = image.resize((800, 600), Image.LANCZOS)  # Resize image to fit window
 
