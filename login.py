@@ -24,7 +24,7 @@ def login():
 
     if user:
         messagebox.showinfo("Login Successful", f"Welcome, {username}!")
-        subprocess.Popen(["python", "home.py", username])  # Replace "python" with your Python interpreter if needed
+        subprocess.Popen(["python", "landing.py", username])  # Replace "python" with your Python interpreter if needed
         root.destroy()
     else:
         messagebox.showerror("Login Failed", "Invalid credentials")
