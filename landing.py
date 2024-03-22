@@ -10,13 +10,14 @@ def open_home_with_action(action, username=None):
         # Perform logout functionality or redirect to login page
         print("Logging out...")
         subprocess.Popen(["python", action])
-    elif action == "Add Property":
+    elif action == "add.py":
+        subprocess.Popen(["python", action, username])
         # Perform Add Property functionality
         print("Opening Add Property page...")
-    elif action == "Delete Property":
+    elif action == "home.py":
         # Perform Delete Property functionality
         print("Opening Delete Property page...")
-    elif action == "Search Property":
+    elif action == "home.py":
         # Perform Search Property functionality
         print("Opening Search Property page...")
 
@@ -40,7 +41,7 @@ if __name__ == "__main__":
     quote_label.pack(pady=20)
 
     # Create buttons to open home.py with different actions
-    add_button = tk.Button(window, text="Add Property", command=lambda: open_home_with_action("home.py", username))
+    add_button = tk.Button(window, text="Add Property", command=lambda: open_home_with_action("add.py", username))
     add_button.pack()
 
     delete_button = tk.Button(window, text="Delete Property", command=lambda: open_home_with_action("home.py", username))
