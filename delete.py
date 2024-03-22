@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 import mysql.connector
 import sys
+from PIL import Image, ImageTk
 from datetime import datetime, timedelta
 import subprocess
 
@@ -14,16 +15,25 @@ else:
     print("No username provided.")
 
 root = tk.Tk(className=' Real Estate Management System')
+
+# Set window dimensions and position
 window_width = 800
 window_height = 600
-
 screen_width = root.winfo_screenwidth()
 screen_height = root.winfo_screenheight()
-
-x_coordinate = (screen_width/2) - (window_width/2)
-y_coordinate = (screen_height/2) - (window_height/2)
-
+x_coordinate = (screen_width / 2) - (window_width / 2)
+y_coordinate = (screen_height / 2) - (window_height / 2)
 root.geometry("%dx%d+%d+%d" % (window_width, window_height, x_coordinate, y_coordinate))
+
+# Load and resize the background image
+bg_image = Image.open("./images/Home.png")
+bg_image = bg_image.resize((window_width, window_height), Image.LANCZOS)  # Use Lanczos resampling
+bg_photo = ImageTk.PhotoImage(bg_image)
+
+# Create a Label to display the background image
+bg_label = tk.Label(root, image=bg_photo)
+bg_label.place(x=0, y=0, relwidth=1, relheight=1)
+
 root.configure(bg='light blue')
 
 global e1
@@ -33,37 +43,36 @@ global e4
 global e5
 global e6
 
-tk.Label(root, text="Plot number").place(x=10, y=20)
-tk.Label(root, text="Owner Name").place(x=290, y=20)
-tk.Label(root, text="Size").place(x=10, y=80)
-tk.Label(root, text="Price").place(x=10, y=110)
-tk.Label(root, text="Address").place(x=10, y=140)
-tk.Label(root, text="Type of House").place(x=10, y=170)
-tk.Label(root, text=username).place(x=680, y=80)
-tk.Label(root, text="City").place(x=10, y=50)
+# tk.Label(root, text="Plot number").place(x=10, y=20)
+# # tk.Label(root, text="Owner Name").place(x=290, y=20)
+# tk.Label(root, text="Size").place(x=10, y=80)
+# tk.Label(root, text="Price").place(x=10, y=110)
+# tk.Label(root, text="Address").place(x=10, y=140)
+# tk.Label(root, text="Type of House").place(x=10, y=170)
+tk.Label(root, text=username).place(x=710, y=117)
+# tk.Label(root, text="City").place(x=10, y=50)
 
-e1 = tk.Entry(root)
-e1.place(x=140, y=20)
+e1 = tk.Entry(root, borderwidth=0, highlightthickness=0)
+e1.place(x=165, y=82)
 
 e2 = tk.Entry(root)
 e2.insert(0, username)  # Set owner's name as the username
 e2.config(state='disabled')  # Make it read-only
-e2.place(x=370, y=20)
 
-e3 = tk.Entry(root)
-e3.place(x=140, y=80)
+e3 = tk.Entry(root, borderwidth=0, highlightthickness=0)
+e3.place(x=165, y=122)
 
-e4 = tk.Entry(root)
-e4.place(x=140, y=110)
+e4 = tk.Entry(root, borderwidth=0, highlightthickness=0)
+e4.place(x=165, y=163)
 
-e5 = tk.Entry(root)
-e5.place(x=140, y=140)
+e5 = tk.Entry(root, borderwidth=0, highlightthickness=0)
+e5.place(x=435, y=124)
 
-e6 = tk.Entry(root)
-e6.place(x=140, y=170)
+e6 = tk.Entry(root, borderwidth=0, highlightthickness=0)
+e6.place(x=435, y=164)
 
-e7 = tk.Entry(root)
-e7.place(x=140, y=50)
+e7 = tk.Entry(root, borderwidth=0, highlightthickness=0)
+e7.place(x=435, y=80)
 
 
 def Add():
@@ -135,27 +144,18 @@ def update():
         sql = "UPDATE property SET size = %s, price = %s, address = %s, typeofhouse = %s, city = %s, plotid = %s WHERE ownername = %s"
         val = (size, price, address, typeofhouse, city, studid, studname)
         mycursor.execute(sql, val)
-        rows_affected = mycursor.rowcount  # Get the number of rows affected by the update
-        
-        if rows_affected > 0:
-            mysqldb.commit()
-            messagebox.showinfo("", "Plot Updated")
-            clear_entries()
-            listBox.delete(*listBox.get_children())
-            show()
-        else:
-            messagebox.showerror("Error", "You are not authorized to update this property")
-            mysqldb.rollback()
+        mysqldb.commit()
+        messagebox.showinfo("", "Plot Updated")
+        clear_entries()
+        listBox.delete(*listBox.get_children())
+        show()
 
     except Exception as e:
         print(e)
-        messagebox.showerror("Error", "Failed to update property.")
         mysqldb.rollback()
 
     finally:
         mysqldb.close()
-
-
 
 
 def search():
@@ -404,26 +404,25 @@ def clear_entries():
     e7.delete(0, tk.END)
     e1.focus_set()
 
-
-tk.Button(root, text="Delete", command=delete, height=3, width=13).place(x=30, y=210)
-tk.Button(root, text="Refresh", command=refresh, height=3,width=13).place(x=140, y=210)
-tk.Button(root, text="Back", command=logout, height=3, width=13).place(x=250, y=210)
-tk.Button(root, text="Profile", command=profile,height=3, width=13).place(x=650, y=20)
+tk.Button(root, text="Delete", command=delete, height=2, width=13).place(x=30, y=240)
+tk.Button(root, text="Refresh", command=refresh, height=2,width=13).place(x=140, y=240)
+tk.Button(root, text="Back", command=logout, height=2, width=13).place(x=250, y=240)
+tk.Button(root, text="View Profile", command=profile,height=1, width=10).place(x=668, y=145)
 
 cols = ('Plot number', 'Owner Name', 'Size', 'Price', 'Address', 'Type of House','Rating', 'Details')
 listBox = ttk.Treeview(root, columns=cols, show='headings')
 
-listBox_width = 780
-hsb_width = 776
+listBox_width = 760
+hsb_width = 760
 
 for col in cols:
     listBox.heading(col, text=col)
     listBox.column(col, anchor='center')  # Add this line to center align the column data
 
-listBox.place(x=10, y=280, width=listBox_width, height=300)
+listBox.place(x=20, y=300, width=listBox_width, height=260)
 
 hsb = ttk.Scrollbar(root, orient="horizontal", command=listBox.xview)
-hsb.place(x=12, y=564, width=hsb_width)
+hsb.place(x=20, y=564, width=hsb_width)
 listBox.configure(xscrollcommand=hsb.set)
 
 show()
