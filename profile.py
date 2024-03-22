@@ -5,7 +5,7 @@ import mysql.connector
 import sys
 
 def back():
-    subprocess.Popen(["python", "home.py", username])  # Pass the username back to home.py
+    subprocess.Popen(["python", "landing.py", username])  # Pass the username back to home.py
     root.destroy()
 
 def open_photos(plotid):
