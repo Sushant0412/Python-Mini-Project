@@ -135,18 +135,27 @@ def update():
         sql = "UPDATE property SET size = %s, price = %s, address = %s, typeofhouse = %s, city = %s, plotid = %s WHERE ownername = %s"
         val = (size, price, address, typeofhouse, city, studid, studname)
         mycursor.execute(sql, val)
-        mysqldb.commit()
-        messagebox.showinfo("", "Plot Updated")
-        clear_entries()
-        listBox.delete(*listBox.get_children())
-        show()
+        rows_affected = mycursor.rowcount  # Get the number of rows affected by the update
+        
+        if rows_affected > 0:
+            mysqldb.commit()
+            messagebox.showinfo("", "Plot Updated")
+            clear_entries()
+            listBox.delete(*listBox.get_children())
+            show()
+        else:
+            messagebox.showerror("Error", "You are not authorized to update this property")
+            mysqldb.rollback()
 
     except Exception as e:
         print(e)
+        messagebox.showerror("Error", "Failed to update property.")
         mysqldb.rollback()
 
     finally:
         mysqldb.close()
+
+
 
 
 def search():
