@@ -49,7 +49,7 @@ global e6
 # tk.Label(root, text="Price").place(x=10, y=110)
 # tk.Label(root, text="Address").place(x=10, y=140)
 # tk.Label(root, text="Type of House").place(x=10, y=170)
-tk.Label(root, text=username).place(x=710, y=117)
+tk.Label(root, text=username, width=5).place(x=710, y=117)
 # tk.Label(root, text="City").place(x=10, y=50)
 
 e1 = tk.Entry(root, borderwidth=0, highlightthickness=0)
@@ -404,10 +404,10 @@ def clear_entries():
     e7.delete(0, tk.END)
     e1.focus_set()
 
-tk.Button(root, text="Search", command=search, height=2, width=13).place(x=30, y=240)
-
-tk.Button(root, text="Refresh", command=refresh, height=2,width=13).place(x=140, y=240)
-tk.Button(root, text="Back", command=logout, height=2, width=13).place(x=250, y=240)
+tk.Button(root, text="Search", command=search, font=("Arial", 12), height=2, width=11, bd=0, relief=tk.FLAT, bg="green", fg="white").place(x=80, y=230)
+tk.Button(root, text="Update", command=update, font=("Arial", 12), height=2, width=11, bd=0, relief=tk.FLAT, bg="orange", fg="white").place(x=210, y=230)
+tk.Button(root, text="Refresh", command=refresh, font=("Arial", 12), height=2, width=11, bd=0, relief=tk.FLAT, bg="blue", fg="white").place(x=340, y=230)
+tk.Button(root, text="Back", command=logout, font=("Arial", 12), height=2, width=11, bd=0, relief=tk.FLAT, bg="red", fg="white").place(x=470, y=230)
 tk.Button(root, text="View Profile", command=profile,height=1, width=10).place(x=668, y=145)
 
 cols = ('Plot number', 'Owner Name', 'Size', 'Price', 'Address', 'Type of House','Rating', 'Details')
