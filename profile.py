@@ -1,6 +1,8 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
 import subprocess
+import os
+from PIL import Image, ImageTk
 import mysql.connector
 import sys
 
@@ -97,40 +99,46 @@ def show_images(event):
             # Open photos.py with plotid as a command line argument
             open_photos(plotid)
 
-
-# Check if a username is provided as a command line argument
 if len(sys.argv) > 1:
     username = sys.argv[1]
     print(f"Welcome, {username}!")
 else:
     print("No username provided.")
-    sys.exit(1)  # Exit the script if no username is provided
+    sys.exit()  # Exit the script if no username is provided
 
+# Create the Tkinter root window
 root = tk.Tk()
 root.title("Profile Page")
 root.geometry("800x600")
 
-# Center the window on the screen
-window_width = 800
-window_height = 600
+# Load the background image
+bg_image_path = "./images/Profile1.png"
+if os.path.exists(bg_image_path):
+    bg_image = Image.open(bg_image_path)
+    bg_image = bg_image.resize((800, 600), Image.LANCZOS)
+    bg_photo = ImageTk.PhotoImage(bg_image)
 
-screen_width = root.winfo_screenwidth()
-screen_height = root.winfo_screenheight()
+    # Create a label for the background image
+    bg_label = tk.Label(root, image=bg_photo)
+    bg_label.place(x=0, y=0)
+    bg_label.image = bg_photo  # Keep a reference to the image to prevent garbage collection
 
-x_coordinate = (screen_width / 2) - (window_width / 2)
-y_coordinate = (screen_height / 2) - (window_height / 2)
+    # Lower the background label to the bottom of the stacking order
+    bg_label.lower()
 
-root.geometry("%dx%d+%d+%d" % (window_width, window_height, x_coordinate, y_coordinate))
-
-# Configure background color
-root.configure(bg='light blue')
-
-# Add a style
-style = ttk.Style(root)
-style.theme_use("clam")  # You can change the theme as needed
+    # Center the window on the screen
+    window_width = 800
+    window_height = 600
+    screen_width = root.winfo_screenwidth()
+    screen_height = root.winfo_screenheight()
+    x_coordinate = (screen_width / 2) - (window_width / 2)
+    y_coordinate = (screen_height / 2) - (window_height / 2)
+    root.geometry("%dx%d+%d+%d" % (window_width, window_height, x_coordinate, y_coordinate))
+else:
+    print("Background image not found.")
 
 # Label to display "My Properties"
-tk.Label(root, text="My Properties", font=('Helvetica', 16), bg='light blue').pack(pady=10)
+#tk.Label(root, text="My Properties", font=('Helvetica', 16), bg='light blue').pack(pady=10)
 
 # Table to display properties
 cols = ('Plot number', 'Size', 'Price', 'Address', 'Rating', 'Type of House', 'Details')  # Updated column name with 'Address'
@@ -146,22 +154,23 @@ for col, width in zip(cols, col_widths):
 for col in cols:
     properties_table.heading(col, text=col)
 
-properties_table.pack(pady=10)
+#properties_table.pack(pady=10)
+properties_table.place(x=20, y=76)
 
 # Bind double-click event to show_images function
 properties_table.bind("<Double-1>", show_images)
 
 # Button to go back
-back_button = tk.Button(root, text="Back", command=back, width=10)
-back_button.pack(pady=20)
+back_button = tk.Button(root, text="Back", command=back, width=13, bg="#00FF00", borderwidth=0, highlightthickness=0)
+back_button.place(x=26, y=333)
 
 # Button to show properties
-show_properties_button = tk.Button(root, text="Show My Properties", command=show_properties, width=20)
-show_properties_button.pack(pady=10)
+show_properties_button = tk.Button(root, text="Show My Properties", command=show_properties, width=18, bg="red", borderwidth=0, highlightthickness=0)
+show_properties_button.place(x=157, y=333)
 
 # Button to show favorites
-show_favorites_button = tk.Button(root, text="Show Favorites", command=show_favorites, width=20)
-show_favorites_button.pack(pady=10)
+show_favorites_button = tk.Button(root, text="Show Favorites", command=show_favorites, width=18, borderwidth=0, highlightthickness=0, bg="orange")
+show_favorites_button.place(x=320, y=333)
 
 # Run the Tkinter event loop
 root.mainloop()
