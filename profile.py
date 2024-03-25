@@ -16,16 +16,16 @@ def open_photos(plotid):
 
 
 def show_properties():
-    # Clear the table
-    for item in properties_table.get_children():
-        properties_table.delete(item)
-    
-    # Fetch properties owned by the user from the database and display in the table
+    # Function to show properties owned by the user in the properties_table
     # Replace 'your_db_credentials' with your actual database credentials
     mysqldb = mysql.connector.connect(host="localhost", user="root", password="test", database="project")
     mycursor = mysqldb.cursor()
 
     try:
+        # Clear the table first
+        for item in properties_table.get_children():
+            properties_table.delete(item)
+
         # Assuming 'username' is the variable containing the username
         mycursor.execute("""
             SELECT p.plotid, p.size, p.price, p.address, r.rating, p.typeofhouse 
@@ -48,16 +48,16 @@ def show_properties():
         mysqldb.close()
 
 def show_favorites():
-    # Clear the table
-    for item in properties_table.get_children():
-        properties_table.delete(item)
-    
-    # Fetch properties from the favorites table
+    # Function to show favorites in the properties_table
     # Replace 'your_db_credentials' with your actual database credentials
     mysqldb = mysql.connector.connect(host="localhost", user="root", password="test", database="project")
     mycursor = mysqldb.cursor()
 
     try:
+        # Clear the table first
+        for item in properties_table.get_children():
+            properties_table.delete(item)
+
         # Assuming 'username' is the variable containing the username
         mycursor.execute("""
             SELECT p.plotid, p.size, p.price, p.address, r.rating, p.typeofhouse 
@@ -81,23 +81,107 @@ def show_favorites():
         mysqldb.close()
 
 
-
 def show_images(event):
+    # Function to handle double-click event on properties_table
     # Get the clicked column
     col_index = properties_table.identify_column(event.x)
     
-    # Check if the clicked column corresponds to the "Images" column
-    if col_index == '#7':
+    # Check if the clicked column corresponds to the "Owner Name" column (assuming it's column 2)
+    if col_index == '#2':
         # Get the clicked item
         item_clicked = properties_table.identify_row(event.y)
         # Get the values of the clicked item
         values = properties_table.item(item_clicked, 'values')
         if values:
             # Extract the plotid from the clicked item
-            print(values)
             plotid = values[0]
-            # Open photos.py with plotid as a command line argument
-            open_photos(plotid)
+            # Confirm deletion with user
+            confirm_delete = messagebox.askyesno("Confirm Deletion", "Are you sure you want to delete this plot?")
+            if confirm_delete:
+                delete_plot(plotid)
+
+def delete_plot(plotid):
+    # Function to delete a plot from properties table, ratings table, and favorites table
+    # Replace 'your_db_credentials' with your actual database credentials
+    mysqldb = mysql.connector.connect(host="localhost", user="root", password="test", database="project")
+    mycursor = mysqldb.cursor()
+
+    try:
+        # Confirm deletion with user
+        confirm_delete = messagebox.askyesno("Confirm Deletion", "Are you sure you want to delete this plot?")
+        if not confirm_delete:
+            return  # Do nothing if user cancels deletion
+
+        # Delete from properties table
+        mycursor.execute("DELETE FROM property WHERE plotid = %s", (plotid,))
+        
+        # Delete from ratings table
+        mycursor.execute("DELETE FROM ratings WHERE plot_id = %s", (plotid,))
+        
+        # Delete from favorites table
+        mycursor.execute("DELETE FROM favorite WHERE favorite_id = %s", (plotid,))
+        
+        mysqldb.commit()
+        messagebox.showinfo("Success", "Plot deleted successfully.")
+        
+        # Refresh the properties table and favorites table
+        show_properties()
+        show_favorites()
+
+    except Exception as e:
+        print(e)
+        messagebox.showerror("Error", "Error deleting plot from the database")
+
+    finally:
+        mysqldb.close()
+
+def show_all_properties():
+    # Function to show all properties only if the username is 'admin'
+    if username == 'admin':
+        # New table for displaying all properties with columns: Plot number, Owner Name, Rating, Type of House
+        new_cols = ('Plot number', 'Owner Name', 'Rating', 'Type of House')
+        new_col_widths = [110, 110, 110, 110]
+
+        new_properties_table = ttk.Treeview(root, columns=new_cols, show='headings', style="Custom.Treeview", height=8)
+
+        for col, width in zip(new_cols, new_col_widths):
+            new_properties_table.column(col, width=width)
+
+        for col in new_cols:
+            new_properties_table.heading(col, text=col)
+
+        # Fetch all properties from the database and display in the new table in ascending order of rating
+        # Replace 'your_db_credentials' with your actual database credentials
+        mysqldb = mysql.connector.connect(host="localhost", user="root", password="test", database="project")
+        mycursor = mysqldb.cursor()
+
+        try:
+            mycursor.execute("""
+                SELECT p.plotid, p.ownername, r.rating, p.typeofhouse 
+                FROM property p 
+                LEFT JOIN ratings r ON p.plotid = r.plot_id 
+                ORDER BY r.rating ASC
+            """)
+
+            records = mycursor.fetchall()
+            for i, (plotid, owner, rating, typeofhouse) in enumerate(records, start=1):
+                new_properties_table.insert("", "end", values=(plotid, owner, rating, typeofhouse))
+
+        except Exception as e:
+            print(e)
+            messagebox.showerror("Error", "Error fetching properties from the database")
+
+        finally:
+            mysqldb.close()
+
+        # Place the new table below the buttons
+        new_properties_table.place(x=20, y=383)
+
+        # Bind double-click event to delete_plot function for owner name
+        new_properties_table.bind("<Double-1>", lambda event: delete_plot(new_properties_table.item(new_properties_table.focus())['values'][0]))
+
+    else:
+        messagebox.showinfo("Access Denied", "You don't have permission to view all properties.")
 
 if len(sys.argv) > 1:
     username = sys.argv[1]
@@ -171,6 +255,11 @@ show_properties_button.place(x=157, y=333)
 # Button to show favorites
 show_favorites_button = tk.Button(root, text="Show Favorites", command=show_favorites, width=18, borderwidth=0, highlightthickness=0, bg="orange")
 show_favorites_button.place(x=320, y=333)
+
+if(username == 'admin'):
+    # Button to show all properties
+    show_all_button = tk.Button(root, text="Show All Properties", command=show_all_properties, width=18, borderwidth=0, highlightthickness=0, bg="yellow", height=2)
+    show_all_button.place(x=483, y=325)
 
 # Run the Tkinter event loop
 root.mainloop()
