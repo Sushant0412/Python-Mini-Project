@@ -183,6 +183,52 @@ def show_all_properties():
     else:
         messagebox.showinfo("Access Denied", "You don't have permission to view all properties.")
 
+def edit_details(entry_phone, entry_email, submit_button):
+        entry_phone.config(state=tk.NORMAL)  # Enable editing of phone number field
+        entry_email.config(state=tk.NORMAL)  # Enable editing of email field
+        submit_button.config(state=tk.NORMAL)  # Enable the submit button
+
+def submit_details(entry_phone, entry_email, submit_button):
+    new_phone = entry_phone.get()
+    new_email = entry_email.get()
+
+    # Validate phone number and email before updating
+    if not new_phone.isdigit() or len(new_phone) != 10:
+        messagebox.showerror("Error", "Please enter a valid 10-digit phone number.")
+        return
+    if '@' not in new_email or '.' not in new_email:
+        messagebox.showerror("Error", "Please enter a valid email address.")
+        return
+
+    # Check if the user's phone number and email already exist in the database
+    mysqldb = mysql.connector.connect(host="localhost", user="root", password="test", database="project")
+    mycursor = mysqldb.cursor()
+
+    try:
+        mycursor.execute("SELECT phone_number, email FROM users WHERE username = %s", (username,))
+        user_data = mycursor.fetchone()
+        if user_data:
+            # User data already exists, update the existing record
+            mycursor.execute("UPDATE users SET phone_number = %s, email = %s WHERE username = %s", (new_phone, new_email, username))
+            messagebox.showinfo("Success", "Phone number and email updated successfully.")
+        else:
+            # User data doesn't exist, insert a new record
+            mycursor.execute("INSERT INTO users (username, phone_number, email) VALUES (%s, %s, %s)", (username, new_phone, new_email))
+            messagebox.showinfo("Success", "Phone number and email inserted successfully.")
+        
+        mysqldb.commit()
+    except Exception as e:
+        print(e)
+        messagebox.showerror("Error", "Error updating/inserting phone number and email in the database")
+    finally:
+        mysqldb.close()
+
+    entry_phone.config(state=tk.DISABLED)  # Disable editing of phone number field after submission
+    entry_email.config(state=tk.DISABLED)  # Disable editing of email field after submission
+    submit_button.config(state=tk.DISABLED)  # Disable the submit button after submission
+
+
+
 if len(sys.argv) > 1:
     username = sys.argv[1]
     print(f"Welcome, {username}!")
@@ -260,6 +306,34 @@ if(username == 'admin'):
     # Button to show all properties
     show_all_button = tk.Button(root, text="Show All Properties", command=show_all_properties, width=18, borderwidth=0, highlightthickness=0, bg="yellow", height=2)
     show_all_button.place(x=483, y=325)
+    
+if username != 'admin':
+    phone_frame = tk.Frame(root, bg='white')
+    phone_frame.place(x=26, y=400)
+
+    # Phone Number Label and Entry
+    phone_label = tk.Label(phone_frame, text="Phone Number:", bg='white')
+    phone_label.pack(side=tk.LEFT)
+
+    phone_var = tk.StringVar()
+    phone_entry = tk.Entry(phone_frame, textvariable=phone_var, state=tk.DISABLED)
+    phone_entry.pack(side=tk.LEFT, padx=10)
+
+    # Email Label and Entry
+    email_label = tk.Label(phone_frame, text="Email:", bg='white')
+    email_label.pack(side=tk.LEFT)
+
+    email_var = tk.StringVar()
+    email_entry = tk.Entry(phone_frame, textvariable=email_var, state=tk.DISABLED)
+    email_entry.pack(side=tk.LEFT, padx=10)
+
+    # Edit Button
+    edit_button = tk.Button(phone_frame, text="Edit", command=lambda: edit_details(phone_entry, email_entry, submit_button))
+    edit_button.pack(side=tk.LEFT, padx=10)
+
+    # Submit Button
+    submit_button = tk.Button(phone_frame, text="Submit", command=lambda: submit_details(phone_entry, email_entry, submit_button), state=tk.DISABLED)
+    submit_button.pack(side=tk.LEFT, padx=10)
 
 # Run the Tkinter event loop
 root.mainloop()

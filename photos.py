@@ -44,8 +44,6 @@ def add_rating(plot_id, rating, username):
             cursor.close()
             connection.close()
 
-
-
 def button_clicked(entry, plot_id, username):
     rating = entry.get()
     try:
@@ -70,7 +68,13 @@ def main():
 
     root = tk.Tk()
     root.title("Rating Page")
-    root.geometry("400x200")
+    root.geometry("800x600")  # Set window size to 800x600
+    # Calculate the position to center the window on the screen
+    screen_width = root.winfo_screenwidth()
+    screen_height = root.winfo_screenheight()
+    x_position = (screen_width - 800) // 2
+    y_position = (screen_height - 600) // 2
+    root.geometry(f"800x600+{x_position}+{y_position}")  # Set window position at center
 
     # Create a Label widget for rating input
     label = tk.Label(root, text="Enter Rating (0-5):")

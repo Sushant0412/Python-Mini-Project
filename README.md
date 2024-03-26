@@ -37,19 +37,7 @@ CREATE TABLE `favorite` (
 PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
 
-table 4 images
-CREATE TABLE `images` (
-`plot_id` int NOT NULL,
-`img1` longblob NOT NULL,
-`img2` longblob NOT NULL,
-`img3` longblob NOT NULL,
-`img4` longblob NOT NULL,
-`img5` longblob NOT NULL,
-PRIMARY KEY (`plot_id`),
-UNIQUE KEY `plot_id_UNIQUE` (`plot_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
-
-table 5 ratings
+table 4 ratings
 CREATE TABLE `ratings` (
 `rating_id` int NOT NULL AUTO_INCREMENT,
 `plot_id` int NOT NULL,
@@ -57,6 +45,15 @@ CREATE TABLE `ratings` (
 `owner` varchar(45) NOT NULL,
 PRIMARY KEY (`rating_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+
+table 5 users
+CREATE TABLE `users` (
+  `username` varchar(255) NOT NULL,
+  `phone_number` varchar(15) DEFAULT NULL,
+  `email` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`username`),
+  UNIQUE KEY `username` (`username`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
 
 // below this tumko banana hai
 // while adding path to the db for images make sure to use \\ instead of \ for path
